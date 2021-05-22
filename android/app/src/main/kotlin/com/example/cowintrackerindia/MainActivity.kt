@@ -1,22 +1,23 @@
 package com.example.cowintrackerindia
 
-import android.content.Context
+import android.app.ActivityManager
+import android.content.*
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
-import android.content.ContextWrapper
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
-import android.widget.Toast
 import androidx.annotation.NonNull
+import com.example.cowintrackerindia.constants.Constants
+import com.example.cowintrackerindia.service.MyService
+import io.flutter.plugin.common.MethodCall
 
 class MainActivity: FlutterActivity() {
 
     private val channel = "platformChannelForFlutter"
+    private lateinit var mSharedPreferences: SharedPreferences
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -54,15 +55,151 @@ class MainActivity: FlutterActivity() {
 
                 "registerWithPinCode" -> {
                     // Accessing arguments-> call.arguments returns a map/object with the passes arguments as described in above comments
+
+                    val pincodeService = MyService()
+                    if(!isMyServiceRunning(pincodeService::class.java)) {
+                        mSharedPreferences = this.getSharedPreferences(
+                            Constants().ALERT,
+                            MODE_PRIVATE
+                        )
+                        saveDetails(true, mSharedPreferences, call)
+
+                        val serviceIntent = Intent(this, pincodeService::class.java)
+                        this.startService(serviceIntent)
+                    } else {
+                        //service already present
+                    }
+
                     result.success(call.arguments.toString())
                 }
 
                 "registerWithDistrictId" -> {
+
+                    val districtIDService = MyService()
+                    if(!isMyServiceRunning(districtIDService::class.java)) {
+                        mSharedPreferences = this.getSharedPreferences(
+                            Constants().ALERT,
+                            MODE_PRIVATE
+                        )
+                        saveDetails(false, mSharedPreferences, call)
+
+                        val serviceIntent = Intent(this, districtIDService::class.java)
+                        this.startService(serviceIntent)
+                    } else {
+                        //service already present
+                    }
+
+
                     result.success(call.arguments.toString())
                 }
+
+                "onDestroy" -> {
+                    mSharedPreferences = this.getSharedPreferences(
+                        Constants().ALERT,
+                        MODE_PRIVATE
+                    )
+                    if(mSharedPreferences.getString(Constants().TYPE, "") != null  &&
+                        mSharedPreferences.getString(Constants().TYPE, "") != "") {
+                        val broadcastIntent = Intent()
+                        broadcastIntent.action = "RestartService"
+                        broadcastIntent.setClass(this, BroadcastReceiver::class.java)
+                        this.sendBroadcast(broadcastIntent)
+                    }
+                }
+
+                "deleteAlerts" -> {
+                    mSharedPreferences = this.getSharedPreferences(
+                        Constants().ALERT,
+                        MODE_PRIVATE
+                    )
+                    deleteDetails(mSharedPreferences)
+                    val service = MyService()
+                    if(isMyServiceRunning(service::class.java)) {
+                        val serviceIntent = Intent(this, service::class.java)
+                        service.stopService(serviceIntent)
+                    }
+                }
+
                 else -> result.notImplemented()
             }
         }
+    }
+
+    private fun deleteDetails(sharedPreferences: SharedPreferences) {
+        sharedPreferences.edit().putString(
+            Constants().PINCODE,
+            ""
+        ).apply()
+        sharedPreferences.edit().putString(
+            Constants().TYPE,
+            ""
+        ).apply()
+
+        sharedPreferences.edit().putString(
+            Constants().AGE,
+            ""
+        ).apply()
+        sharedPreferences.edit().putString(
+            Constants().COST,
+            ""
+        ).apply()
+        sharedPreferences.edit().putString(
+            Constants().DOSE,
+            ""
+        ).apply()
+        sharedPreferences.edit().putString(
+            Constants().VACCINE,
+            ""
+        ).apply()
+    }
+
+    private fun saveDetails(flag: Boolean, sharedPreferences: SharedPreferences, call: MethodCall) {
+        if(flag) {
+            sharedPreferences.edit().putString(
+                Constants().PINCODE,
+                ""+call.argument("pincode")
+            ).apply()
+            sharedPreferences.edit().putString(
+                Constants().TYPE,
+                "pincode"
+            ).apply()
+        } else {
+            sharedPreferences.edit().putString(
+                Constants().DISTRICTID,
+                ""+call.argument("districtId")
+            ).apply()
+            sharedPreferences.edit().putString(
+                Constants().TYPE,
+                "districtId"
+            ).apply()
+        }
+
+        sharedPreferences.edit().putString(
+            Constants().AGE,
+            ""+call.argument("age")
+        ).apply()
+        sharedPreferences.edit().putString(
+            Constants().COST,
+            ""+call.argument("cost")
+        ).apply()
+        sharedPreferences.edit().putString(
+            Constants().DOSE,
+            ""+call.argument("dose")
+        ).apply()
+        sharedPreferences.edit().putString(
+            Constants().VACCINE,
+            ""+call.argument("vaccine")
+        ).apply()
+    }
+
+    private fun isMyServiceRunning(serviceClass: Class<*>): Boolean {
+        val manager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        for (service in manager.getRunningServices(Int.MAX_VALUE)) {
+            if (serviceClass.name == service.service.className) {
+                return true
+            }
+        }
+        return false
     }
 
     private fun getBatteryLevel(): Int {
