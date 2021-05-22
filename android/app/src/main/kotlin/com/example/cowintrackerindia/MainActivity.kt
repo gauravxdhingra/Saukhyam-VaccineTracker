@@ -1,15 +1,20 @@
 package com.example.cowintrackerindia
 
 import android.app.ActivityManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.*
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 import android.os.BatteryManager
+import android.os.Build
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
+import android.util.Log
 import androidx.annotation.NonNull
+import androidx.core.app.NotificationCompat
 import com.example.cowintrackerindia.constants.Constants
 import com.example.cowintrackerindia.service.MyService
 import io.flutter.plugin.common.MethodCall
@@ -66,7 +71,10 @@ class MainActivity: FlutterActivity() {
 
                         val serviceIntent = Intent(this, pincodeService::class.java)
                         this.startService(serviceIntent)
+                        notifyUser("Vaccine Alert Set!"
+                            ,"We'll notify you as soon as vaccines are available for booking!")
                     } else {
+                        Log.d("serviceCheck","Service Already Present")
                         //service already present
                     }
 
@@ -85,11 +93,12 @@ class MainActivity: FlutterActivity() {
 
                         val serviceIntent = Intent(this, districtIDService::class.java)
                         this.startService(serviceIntent)
+                        notifyUser("Vaccine Alert Set!"
+                            ,"We'll notify you as soon as vaccines are available for booking!")
                     } else {
                         //service already present
+                        Log.d("serviceCheck","Service Already Present")
                     }
-
-
                     result.success(call.arguments.toString())
                 }
 
@@ -108,16 +117,23 @@ class MainActivity: FlutterActivity() {
                 }
 
                 "deleteAlerts" -> {
-                    mSharedPreferences = this.getSharedPreferences(
-                        Constants().ALERT,
-                        MODE_PRIVATE
-                    )
-                    deleteDetails(mSharedPreferences)
-                    val service = MyService()
-                    if(isMyServiceRunning(service::class.java)) {
-                        val serviceIntent = Intent(this, service::class.java)
-                        service.stopService(serviceIntent)
+                    try{
+                        mSharedPreferences = this.getSharedPreferences(
+                            Constants().ALERT,
+                            MODE_PRIVATE
+                        )
+                        deleteDetails(mSharedPreferences)
+                        val service = MyService()
+                        if (isMyServiceRunning(service::class.java)) {
+                            val serviceIntent = Intent(this, service::class.java)
+                            service.stopSelf();
+                        }
+
+                        result.success(true);
+                    } catch (e: Exception){
+                        result.error("AlertNotDeleted", "Couldn't delete error", "Error occurred while deleting an alert")
                     }
+
                 }
 
                 else -> result.notImplemented()
@@ -217,6 +233,21 @@ class MainActivity: FlutterActivity() {
                 -1
             )
         }
+    }
+
+    private fun notifyUser(title:String="", details:String="") {
+        val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            nm.createNotificationChannel(NotificationChannel("100","alert", NotificationManager.IMPORTANCE_HIGH))
+        }
+        val simpleNotification = NotificationCompat.Builder(this, "100")
+            .setContentTitle(title)
+            .setContentText(details)
+            .setSmallIcon(R.drawable.launch_background)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .build()
+
+        nm.notify(1, simpleNotification)
     }
 
 //    fun Context.toast(message: CharSequence) =

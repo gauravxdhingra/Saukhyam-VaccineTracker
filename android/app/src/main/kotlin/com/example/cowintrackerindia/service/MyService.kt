@@ -55,7 +55,7 @@ class MyService : Service() {
                 check()
             }
         }
-        timer!!.schedule(timerTask, 3000, 15 * 60 * 1000)
+        timer!!.schedule(timerTask, 3000, 5 * 60 * 1000)
     }
 
     private fun stopTimerTask() {
@@ -108,14 +108,19 @@ class MyService : Service() {
         service.getCalendarByPIN(pincode, getDateString()).enqueue(object : Callback<Model> {
             override fun onResponse(call: Call<Model>, response: Response<Model>) {
                 if (response.isSuccessful) {
+                    Log.d("myCHECK", "response successful --> " + response.raw())
                     val model = response.body()!!
                     for(center in model.centers) {
                         var flag = false
                         for(session in center.sessions) {
                             if(isPreferred(sharedPreferences, session, center)) {
-                                notifyUser()
+                                notifyUser("Vaccines Available!", "Book your slot on CoWIN Portal ASAP!")
                                 flag = true
                                 break
+                            }
+//                            TODO: REMOVE ELSE
+                            else{
+                                notifyUser("Vaccines Not Available!", "Better Luck NextTime!")
                             }
                         }
                         if(flag) {
@@ -144,9 +149,13 @@ class MyService : Service() {
                         var flag = false
                         for(session in center.sessions) {
                             if(isPreferred(sharedPreferences, session, center)) {
-                                notifyUser()
+                                notifyUser("Vaccines Available!", "Book your slot on CoWIN Portal ASAP!")
                                 flag = true
                                 break
+                            }
+//                            TODO: REMOVE ELSE
+                            else{
+                                notifyUser("Vaccines Not Available!", "Better Luck NextTime!")
                             }
                         }
                         if(flag) {
@@ -164,14 +173,14 @@ class MyService : Service() {
         })
     }
 
-    private fun notifyUser() {
+    private fun notifyUser(title:String="", details:String="") {
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             nm.createNotificationChannel(NotificationChannel("100","alert", NotificationManager.IMPORTANCE_HIGH))
         }
         val simpleNotification = NotificationCompat.Builder(this, "100")
-            .setContentTitle("Vaccine Available!!")
-            .setContentText("Check the Co-Win website ASAP to confirm your slot")
+            .setContentTitle(title)
+            .setContentText(details)
             .setSmallIcon(R.drawable.launch_background)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .build()

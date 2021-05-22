@@ -1,7 +1,10 @@
 import 'package:cowintrackerindia/provider/api_provider.dart';
 import 'package:cowintrackerindia/provider/platform_channel_provider.dart';
+import 'package:cowintrackerindia/ui/alert_set_confimation.dart';
 import 'package:cowintrackerindia/ui/input_details.dart';
+import 'package:cowintrackerindia/ui/splash_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -20,11 +23,17 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          primaryColor: Colors.blue,
+          accentColor: Colors.blueGrey,
+          // brightness: Brightness.dark,
+          // scaffoldBackgroundColor: Colors.black,
         ),
         debugShowCheckedModeBanner: false,
         routes: {
-          '/': (context) => InputDetails(),
+          '/': (context) => SplashScreen(),
+          AlertSetConfirmationPage.routeName: (context) =>
+              AlertSetConfirmationPage(),
+          InputDetails.routeName: (context) => InputDetails(),
         },
       ),
     );

@@ -32,7 +32,7 @@ class PlatformChannelProvider with ChangeNotifier {
         "dose": dose,
         "cost": cost
       });
-      print(result);
+      print("Result Fromm Native: " + result);
     } on PlatformException catch (e) {
       print(e.message);
     }
@@ -55,10 +55,31 @@ class PlatformChannelProvider with ChangeNotifier {
         "dose": dose,
         "cost": cost
       });
-      print(result);
+      print("Result Fromm Native: " + result);
     } on PlatformException catch (e) {
       print(e.message);
     }
+  }
+
+  Future<void> onDestroy() async {
+    try {
+      await platform.invokeMethod('onDestroy');
+      print("OnDestroy called on native");
+    } on PlatformException catch (e) {
+      print(e.message);
+    }
+  }
+
+  Future<bool> deleteAlerts() async {
+    bool result = false;
+    try {
+      result = await platform.invokeMethod('deleteAlerts');
+      print("Alert Deleted");
+    } on PlatformException catch (e) {
+      print(e.message);
+      result = false;
+    }
+    return result;
   }
 
   int? get getPincodeProv => _pincodeProv;
@@ -69,7 +90,7 @@ class PlatformChannelProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  set setDistrictCodeProv(int value) {
+  set setDistrictCodeProv(int? value) {
     _districtCodeProv = value;
     notifyListeners();
   }
