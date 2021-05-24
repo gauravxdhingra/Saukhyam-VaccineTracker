@@ -37,7 +37,7 @@ class MyService : Service() {
 
     override fun onDestroy() {
         stopTimerTask()
-        createBS()
+//        createBS()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -45,6 +45,7 @@ class MyService : Service() {
         return super.onStartCommand(intent, flags, startId)
     }
 
+    private var toStop = false
     private var timer: Timer? = null
     private var timerTask: TimerTask? = null
 
@@ -52,14 +53,21 @@ class MyService : Service() {
         timer = Timer()
         timerTask = object : TimerTask() {
             override fun run() {
+                if(toStop) {
+                    Log.d("myCHECK", "kill")
+                    timerTask = null
+                    timer = null
+                    return
+                }
                 check()
             }
         }
-        timer!!.schedule(timerTask, 3000, 5 * 60 * 1000)
+        timer!!.schedule(timerTask, 3000, 1 * 60 * 1000)
     }
 
     private fun stopTimerTask() {
         if (timer != null) {
+            toStop=true
             timer!!.cancel()
             timer = null
         }
@@ -108,7 +116,7 @@ class MyService : Service() {
         service.getCalendarByPIN(pincode, getDateString()).enqueue(object : Callback<Model> {
             override fun onResponse(call: Call<Model>, response: Response<Model>) {
                 if (response.isSuccessful) {
-                    Log.d("myCHECK", "response successful --> " + response.raw())
+                    Log.d("myCHECK", "response successful --> ")
                     val model = response.body()!!
                     for(center in model.centers) {
                         var flag = false

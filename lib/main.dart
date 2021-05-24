@@ -2,6 +2,7 @@ import 'package:cowintrackerindia/provider/api_provider.dart';
 import 'package:cowintrackerindia/provider/platform_channel_provider.dart';
 import 'package:cowintrackerindia/ui/alert_set_confimation.dart';
 import 'package:cowintrackerindia/ui/input_details.dart';
+import 'package:cowintrackerindia/ui/service_running.dart';
 import 'package:cowintrackerindia/ui/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
@@ -25,15 +26,19 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primaryColor: Colors.blue,
           accentColor: Colors.blueGrey,
-          // brightness: Brightness.dark,
-          // scaffoldBackgroundColor: Colors.black,
+          bottomSheetTheme:
+              BottomSheetThemeData(backgroundColor: Colors.black54),
         ),
         debugShowCheckedModeBanner: false,
         routes: {
-          '/': (context) => SplashScreen(),
+          '/': (context) =>
+              // ServiceAlreadyRunningPage(),
+              SplashScreen(),
           AlertSetConfirmationPage.routeName: (context) =>
               AlertSetConfirmationPage(),
           InputDetails.routeName: (context) => InputDetails(),
+          ServiceAlreadyRunningPage.routeName: (context) =>
+              ServiceAlreadyRunningPage(),
         },
       ),
     );
@@ -41,6 +46,7 @@ class MyApp extends StatelessWidget {
 }
 
 // TODO: Platform Channel Test
+// TODO: Beautify State and District Choser
 
 // class MyHomePage extends StatefulWidget {
 //   MyHomePage({Key? key, required this.title}) : super(key: key);

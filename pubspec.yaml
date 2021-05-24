@@ -29,6 +29,8 @@ dependencies:
   flutter_neumorphic: ^3.1.0
   font_awesome_flutter: ^9.0.0
   intl: ^0.17.0
+  loading_indicator: ^2.1.1
+  marquee: ^2.1.0
   modal_bottom_sheet: ^2.0.0
   provider: ^5.0.0
   rolling_switch: ^0.0.2

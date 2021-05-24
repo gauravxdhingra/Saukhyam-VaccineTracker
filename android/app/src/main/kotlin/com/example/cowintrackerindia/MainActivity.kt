@@ -125,8 +125,7 @@ class MainActivity: FlutterActivity() {
                         deleteDetails(mSharedPreferences)
                         val service = MyService()
                         if (isMyServiceRunning(service::class.java)) {
-                            val serviceIntent = Intent(this, service::class.java)
-                            service.stopSelf();
+                            stopService(Intent(this, service::class.java))
                         }
 
                         result.success(true);
