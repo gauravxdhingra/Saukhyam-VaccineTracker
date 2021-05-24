@@ -1,16 +1,19 @@
 package com.example.cowintrackerindia.service
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Color
 import android.net.ConnectivityManager
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import android.webkit.WebSettings
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.cowintrackerindia.R
 import com.example.cowintrackerindia.api.API
@@ -31,13 +34,25 @@ class MyService : Service() {
 
     private lateinit var mSharedPreferences: SharedPreferences
 
+    override fun onCreate() {
+        super.onCreate()
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O)
+            startMyOwnForeground()
+        else
+            startForeground(1, persistentNotification())
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun startMyOwnForeground() {
+        startForeground(2, persistentNotification())
+    }
+
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
     override fun onDestroy() {
         stopTimerTask()
-//        createBS()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -54,7 +69,6 @@ class MyService : Service() {
         timerTask = object : TimerTask() {
             override fun run() {
                 if(toStop) {
-                    Log.d("myCHECK", "kill")
                     timerTask = null
                     timer = null
                     return
@@ -62,7 +76,7 @@ class MyService : Service() {
                 check()
             }
         }
-        timer!!.schedule(timerTask, 3000, 1 * 60 * 1000)
+        timer!!.schedule(timerTask, 1 * 60 * 1000, 1 * 60 * 1000)
     }
 
     private fun stopTimerTask() {
@@ -71,13 +85,6 @@ class MyService : Service() {
             timer!!.cancel()
             timer = null
         }
-    }
-
-    private fun createBS() {
-        val broadcastIntent = Intent()
-        broadcastIntent.action = "RestartService"
-        broadcastIntent.setClass(this, BroadcastReceiver::class.java)
-        this.sendBroadcast(broadcastIntent)
     }
 
     private fun check() {
@@ -118,17 +125,19 @@ class MyService : Service() {
                 if (response.isSuccessful) {
                     Log.d("myCHECK", "response successful --> ")
                     val model = response.body()!!
+                    if(model.centers == null) {
+                        return
+                    }
                     for(center in model.centers) {
                         var flag = false
+                        if(center.sessions == null) {
+                            continue
+                        }
                         for(session in center.sessions) {
                             if(isPreferred(sharedPreferences, session, center)) {
                                 notifyUser("Vaccines Available!", "Book your slot on CoWIN Portal ASAP!")
                                 flag = true
                                 break
-                            }
-//                            TODO: REMOVE ELSE
-                            else{
-                                notifyUser("Vaccines Not Available!", "Better Luck NextTime!")
                             }
                         }
                         if(flag) {
@@ -160,10 +169,6 @@ class MyService : Service() {
                                 notifyUser("Vaccines Available!", "Book your slot on CoWIN Portal ASAP!")
                                 flag = true
                                 break
-                            }
-//                            TODO: REMOVE ELSE
-                            else{
-                                notifyUser("Vaccines Not Available!", "Better Luck NextTime!")
                             }
                         }
                         if(flag) {
@@ -292,6 +297,24 @@ class MyService : Service() {
         } else {
             return false
         }
+    }
+
+    private fun persistentNotification(): Notification {
+        val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            nm.createNotificationChannel(
+                NotificationChannel(
+                    "101",
+                    "background-service",
+                    NotificationManager.IMPORTANCE_HIGH
+                )
+            )
+        }
+        return NotificationCompat.Builder(this, "101")
+            .setContentTitle("Vaccine Alert Set")
+            .setContentText("We will notify you as soon as the slots get available!")
+            .setSmallIcon(R.drawable.launch_background)
+            .build()
     }
 
 }

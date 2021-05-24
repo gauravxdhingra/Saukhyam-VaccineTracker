@@ -12,6 +12,7 @@ import android.os.BatteryManager
 import android.os.Build
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
+import android.os.Bundle
 import android.util.Log
 import androidx.annotation.NonNull
 import androidx.core.app.NotificationCompat
@@ -23,6 +24,14 @@ class MainActivity: FlutterActivity() {
 
     private val channel = "platformChannelForFlutter"
     private lateinit var mSharedPreferences: SharedPreferences
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        mSharedPreferences = this.getSharedPreferences(
+            Constants().ALERT,
+            MODE_PRIVATE
+        )
+    }
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -60,19 +69,13 @@ class MainActivity: FlutterActivity() {
 
                 "registerWithPinCode" -> {
                     // Accessing arguments-> call.arguments returns a map/object with the passes arguments as described in above comments
-
+                    Log.v("myCHECK", "pincode-main")
                     val pincodeService = MyService()
                     if(!isMyServiceRunning(pincodeService::class.java)) {
-                        mSharedPreferences = this.getSharedPreferences(
-                            Constants().ALERT,
-                            MODE_PRIVATE
-                        )
                         saveDetails(true, mSharedPreferences, call)
 
                         val serviceIntent = Intent(this, pincodeService::class.java)
                         this.startService(serviceIntent)
-                        notifyUser("Vaccine Alert Set!"
-                            ,"We'll notify you as soon as vaccines are available for booking!")
                     } else {
                         Log.d("serviceCheck","Service Already Present")
                         //service already present
@@ -83,18 +86,13 @@ class MainActivity: FlutterActivity() {
 
                 "registerWithDistrictId" -> {
 
+                    Log.v("myCHECK", "district-main")
                     val districtIDService = MyService()
                     if(!isMyServiceRunning(districtIDService::class.java)) {
-                        mSharedPreferences = this.getSharedPreferences(
-                            Constants().ALERT,
-                            MODE_PRIVATE
-                        )
                         saveDetails(false, mSharedPreferences, call)
 
                         val serviceIntent = Intent(this, districtIDService::class.java)
                         this.startService(serviceIntent)
-                        notifyUser("Vaccine Alert Set!"
-                            ,"We'll notify you as soon as vaccines are available for booking!")
                     } else {
                         //service already present
                         Log.d("serviceCheck","Service Already Present")
@@ -103,10 +101,6 @@ class MainActivity: FlutterActivity() {
                 }
 
                 "onDestroy" -> {
-                    mSharedPreferences = this.getSharedPreferences(
-                        Constants().ALERT,
-                        MODE_PRIVATE
-                    )
                     if(mSharedPreferences.getString(Constants().TYPE, "") != null  &&
                         mSharedPreferences.getString(Constants().TYPE, "") != "") {
                         val broadcastIntent = Intent()
@@ -118,10 +112,6 @@ class MainActivity: FlutterActivity() {
 
                 "deleteAlerts" -> {
                     try{
-                        mSharedPreferences = this.getSharedPreferences(
-                            Constants().ALERT,
-                            MODE_PRIVATE
-                        )
                         deleteDetails(mSharedPreferences)
                         val service = MyService()
                         if (isMyServiceRunning(service::class.java)) {
@@ -234,19 +224,15 @@ class MainActivity: FlutterActivity() {
         }
     }
 
-    private fun notifyUser(title:String="", details:String="") {
-        val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            nm.createNotificationChannel(NotificationChannel("100","alert", NotificationManager.IMPORTANCE_HIGH))
+    override fun onDestroy() {
+        super.onDestroy()
+        if(mSharedPreferences.getString(Constants().TYPE, "") != null  &&
+            mSharedPreferences.getString(Constants().TYPE, "") != "") {
+            val broadcastIntent = Intent()
+            broadcastIntent.action = "RestartService"
+            broadcastIntent.setClass(this, BroadcastReceiver::class.java)
+            this.sendBroadcast(broadcastIntent)
         }
-        val simpleNotification = NotificationCompat.Builder(this, "100")
-            .setContentTitle(title)
-            .setContentText(details)
-            .setSmallIcon(R.drawable.launch_background)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .build()
-
-        nm.notify(1, simpleNotification)
     }
 
 //    fun Context.toast(message: CharSequence) =
