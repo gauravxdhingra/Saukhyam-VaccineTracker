@@ -10,7 +10,8 @@ class ServiceAlreadyRunningPage extends StatefulWidget {
       _ServiceAlreadyRunningPageState();
 }
 
-class _ServiceAlreadyRunningPageState extends State<ServiceAlreadyRunningPage> {
+class _ServiceAlreadyRunningPageState extends State<ServiceAlreadyRunningPage>
+    with WidgetsBindingObserver {
   bool _init = false;
 
   PlatformChannelProvider? platformChannelProvider;
@@ -27,6 +28,7 @@ class _ServiceAlreadyRunningPageState extends State<ServiceAlreadyRunningPage> {
   @override
   void didChangeDependencies() async {
     if (!_init) {
+      WidgetsBinding.instance!.addObserver(this);
       platformChannelProvider = Provider.of<PlatformChannelProvider>(context);
       if (ModalRoute.of(context)!.settings.arguments == null) {
         usingSharedPrefs = true;
@@ -62,6 +64,20 @@ class _ServiceAlreadyRunningPageState extends State<ServiceAlreadyRunningPage> {
       });
     }
     super.didChangeDependencies();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.detached) {
+      await platformChannelProvider!.onDestroy();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance!.removeObserver(this);
+    super.dispose();
   }
 
   static Color clayColor = Color(0xFFF2F2F2);

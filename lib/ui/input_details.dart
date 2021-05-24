@@ -77,12 +77,6 @@ class _InputDetailsState extends State<InputDetails> {
     return districts.districts;
   }
 
-  @override
-  void dispose() async {
-    await platformChannelProvider!.onDestroy();
-    super.dispose();
-  }
-
   TextStyle formElementsHeaderTextStyle =
       TextStyle(fontSize: 17, color: Colors.black.withOpacity(0.7));
 
