@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:flutter_toggle_tab/flutter_toggle_tab.dart';
 import 'package:loading_indicator/loading_indicator.dart';
+import 'package:open_settings/open_settings.dart';
 import 'package:provider/provider.dart';
 
 import 'floating_modal.dart';
@@ -23,7 +24,6 @@ class InputDetails extends StatefulWidget {
 }
 
 class _InputDetailsState extends State<InputDetails> {
-  // bool _loading = true;
   bool _init = false;
   LocationMode _locationMode = LocationMode.ByPIN;
 
@@ -87,6 +87,36 @@ class _InputDetailsState extends State<InputDetails> {
     return districts.districts;
   }
 
+  void handleAppbarActionPopupClick(String value) {
+    switch (value) {
+      case 'Battery Optimization Settings':
+        OpenSettings.openIgnoreBatteryOptimizationSetting();
+        break;
+      case 'About':
+        showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+                  title: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("CoWIN Notifier",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: Theme.of(context).primaryColor)),
+                      Text("v1.0",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: Theme.of(context).primaryColor)),
+                    ],
+                  ),
+                  content: Container(),
+                ));
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -100,12 +130,27 @@ class _InputDetailsState extends State<InputDetails> {
           elevation: 0,
           centerTitle: true,
           actions: [
-            GestureDetector(
-                onTap: () async {
-                  await platformChannelProvider!.deleteAlerts();
-                },
-                child: Icon(Icons.more_vert,
-                    color: Theme.of(context).primaryColor)),
+            // GestureDetector(
+            //     onTap: () async {
+            //       OpenSettings.openIgnoreBatteryOptimizationSetting();
+            //       // await platformChannelProvider!.deleteAlerts();
+            //     },
+            //     child: Icon(Icons.more_vert,
+            //         color: Theme.of(context).primaryColor)),
+            PopupMenuButton<String>(
+              onSelected: handleAppbarActionPopupClick,
+              icon:
+                  Icon(Icons.more_vert, color: Theme.of(context).primaryColor),
+              itemBuilder: (BuildContext context) {
+                return {'Battery Optimization Settings', 'About'}
+                    .map((String choice) {
+                  return PopupMenuItem<String>(
+                    value: choice,
+                    child: Text(choice),
+                  );
+                }).toList();
+              },
+            ),
           ],
         ),
         body: Stack(
@@ -198,21 +243,26 @@ class _InputDetailsState extends State<InputDetails> {
                     children: [
                       SizedBox(height: 20),
                       Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 30),
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
                           child: Text("Age Group",
                               style: formElementsHeaderTextStyle)),
-                      SizedBox(height: 10),
+                      SizedBox(height: 5),
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         physics: BouncingScrollPhysics(),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            SizedBox(width: 20),
+                            SizedBox(height: 25),
                             for (int i = 0; i < listAges.length; i++)
-                              textTagOptions(listAges[i], i == iAge, () {
-                                setState(() => iAge = i);
-                              })
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 0),
+                                child:
+                                    textTagOptions(listAges[i], i == iAge, () {
+                                  setState(() => iAge = i);
+                                }),
+                              )
                           ],
                         ),
                       ),
@@ -237,79 +287,81 @@ class _InputDetailsState extends State<InputDetails> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 200),
-                ],
-              ),
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                height: 60,
-                margin: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-                decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    borderRadius: BorderRadius.all(Radius.circular(30.0))),
-                child: TextButton(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.notifications_none, color: Colors.white),
-                      SizedBox(width: 5),
-                      Text("Get Notified",
-                          style: TextStyle(color: Colors.white, fontSize: 20)),
-                    ],
-                  ),
-                  onPressed: () async {
-                    if (_locationMode == LocationMode.ByPIN) {
-                      if (platformChannelProvider!.getPincodeProv != null) {
-                        if (platformChannelProvider!.getPincodeProv! > 110000 &&
-                            platformChannelProvider!.getPincodeProv! < 999999) {
-                          await platformChannelProvider!.registerWithPinCode(
-                              listVaccine[iVaccine ?? 0],
-                              iAge ?? 0,
-                              iDose ?? 0,
-                              iCost ?? 0);
-                          Navigator.pushReplacementNamed(
-                              context, ServiceAlreadyRunningPage.routeName,
-                              arguments: {
-                                "vaccine": listVaccine[iVaccine ?? 0],
-                                "age": iAge ?? 0,
-                                "dose": iDose ?? 0,
-                                "cost": iCost ?? 0,
-                                "pincode":
-                                    platformChannelProvider!.getPincodeProv
-                              });
-                        } else {
-                          //  TODO: SnackBar: Enter a valid pincode
+                  Container(
+                    height: 60,
+                    margin: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
+                        borderRadius: BorderRadius.all(Radius.circular(30.0))),
+                    child: TextButton(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.notifications_none, color: Colors.white),
+                          SizedBox(width: 5),
+                          Text("Get Notified",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 20)),
+                        ],
+                      ),
+                      onPressed: () async {
+                        if (_locationMode == LocationMode.ByPIN) {
+                          if (platformChannelProvider!.getPincodeProv != null) {
+                            if (platformChannelProvider!.getPincodeProv! >
+                                    110000 &&
+                                platformChannelProvider!.getPincodeProv! <
+                                    999999) {
+                              await platformChannelProvider!
+                                  .registerWithPinCode(
+                                      listVaccine[iVaccine ?? 0],
+                                      iAge ?? 0,
+                                      iDose ?? 0,
+                                      iCost ?? 0);
+                              Navigator.pushReplacementNamed(
+                                  context, ServiceAlreadyRunningPage.routeName,
+                                  arguments: {
+                                    "vaccine": listVaccine[iVaccine ?? 0],
+                                    "age": iAge ?? 0,
+                                    "dose": iDose ?? 0,
+                                    "cost": iCost ?? 0,
+                                    "pincode":
+                                        platformChannelProvider!.getPincodeProv
+                                  });
+                            } else {
+                              //  TODO: SnackBar: Enter a valid pincode
+                            }
+                          } else {
+                            //  TODO: SnackBar: Enter a pincode
+                          }
+                        } else if (_locationMode == LocationMode.ByDistrict) {
+                          if (platformChannelProvider!.getDistrictCodeProv !=
+                              null) {
+                            await platformChannelProvider!
+                                .registerWithDistrictId(
+                                    listVaccine[iVaccine ?? 0],
+                                    iAge ?? 0,
+                                    iDose ?? 0,
+                                    iCost ?? 0);
+                            Navigator.pushReplacementNamed(
+                                context, ServiceAlreadyRunningPage.routeName,
+                                arguments: {
+                                  "vaccine": listVaccine[iVaccine ?? 0],
+                                  "age": iAge ?? 0,
+                                  "dose": iDose ?? 0,
+                                  "cost": iCost ?? 0,
+                                  "district":
+                                      platformChannelProvider!.getDistNameProv,
+                                  "state":
+                                      platformChannelProvider!.getStateNameProv,
+                                  "pincode": 000000
+                                });
+                          }
                         }
-                      } else {
-                        //  TODO: SnackBar: Enter a pincode
-                      }
-                    } else if (_locationMode == LocationMode.ByDistrict) {
-                      if (platformChannelProvider!.getDistrictCodeProv !=
-                          null) {
-                        await platformChannelProvider!.registerWithDistrictId(
-                            listVaccine[iVaccine ?? 0],
-                            iAge ?? 0,
-                            iDose ?? 0,
-                            iCost ?? 0);
-                        Navigator.pushReplacementNamed(
-                            context, ServiceAlreadyRunningPage.routeName,
-                            arguments: {
-                              "vaccine": listVaccine[iVaccine ?? 0],
-                              "age": iAge ?? 0,
-                              "dose": iDose ?? 0,
-                              "cost": iCost ?? 0,
-                              "district":
-                                  platformChannelProvider!.getDistNameProv,
-                              "state":
-                                  platformChannelProvider!.getStateNameProv,
-                              "pincode": 000000
-                            });
-                      }
-                    }
-                  },
-                ),
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 100),
+                ],
               ),
             ),
             if (apiProvider!.getLoading)
@@ -348,7 +400,7 @@ class _InputDetailsState extends State<InputDetails> {
                         color: Theme.of(context).primaryColor.withOpacity(0.7),
                         width: 1),
                 borderRadius: BorderRadius.circular(10.0)),
-            margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+            margin: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
             padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
             child: Center(
                 child: Text(tagText,
@@ -377,9 +429,9 @@ class _InputDetailsState extends State<InputDetails> {
       child: GestureDetector(
         onTap: () => onPress(),
         child: Container(
-          height: 150,
-          width: 110,
-          margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+          height: 110,
+          width: 80,
+          margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -388,11 +440,11 @@ class _InputDetailsState extends State<InputDetails> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(15.0),
                 child: Image.asset("assets/images/" + assetURL,
-                    height: 100, fit: BoxFit.fitHeight),
+                    height: 60, fit: BoxFit.fitHeight),
               ),
               SizedBox(height: 10),
               Text(vaccineName, style: labelTextStyle),
-              SizedBox(height: 10),
+              SizedBox(height: 0),
             ],
           ),
         ),
@@ -416,7 +468,7 @@ class _InputDetailsState extends State<InputDetails> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: Text("Dose", style: formElementsHeaderTextStyle),
                 ),
                 SingleChildScrollView(
@@ -424,18 +476,17 @@ class _InputDetailsState extends State<InputDetails> {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      SizedBox(width: 10),
+                      SizedBox(width: 20),
                       for (int i = 0; i < listDose.length; i++)
-                        textTagOptions(listDose[i], i == iBSDose, () {
-                          setModalState(() => iBSDose = i);
-                        }),
+                        textTagOptions(listDose[i], i == iBSDose,
+                            () => setModalState(() => iBSDose = i)),
                       SizedBox(width: 10),
                     ],
                   ),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 30),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: Text("Cost", style: formElementsHeaderTextStyle),
                 ),
                 SingleChildScrollView(
@@ -443,11 +494,10 @@ class _InputDetailsState extends State<InputDetails> {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      SizedBox(width: 10),
+                      SizedBox(width: 20),
                       for (int i = 0; i < listCost.length; i++)
-                        textTagOptions(listCost[i], i == iBSCost, () {
-                          setModalState(() => iBSCost = i);
-                        }),
+                        textTagOptions(listCost[i], i == iBSCost,
+                            () => setModalState(() => iBSCost = i)),
                       SizedBox(width: 10),
                     ],
                   ),
@@ -491,7 +541,8 @@ class EnterDistrict extends StatefulWidget {
   _EnterDistrictState createState() => _EnterDistrictState();
 }
 
-class _EnterDistrictState extends State<EnterDistrict> {
+class _EnterDistrictState extends State<EnterDistrict>
+    with AutomaticKeepAliveClientMixin {
   StateInfo? state;
   District? district;
   bool _init = false;
@@ -516,7 +567,11 @@ class _EnterDistrictState extends State<EnterDistrict> {
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Container(
       child: Column(
         children: [
@@ -540,18 +595,13 @@ class _EnterDistrictState extends State<EnterDistrict> {
                           builder: (_, controller) {
                             return Container(
                               decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.only(
-                                  topLeft: const Radius.circular(25.0),
-                                  topRight: const Radius.circular(25.0),
-                                ),
-                              ),
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.only(
+                                      topLeft: const Radius.circular(25.0),
+                                      topRight: const Radius.circular(25.0))),
                               child: Column(
                                 children: [
-                                  Icon(
-                                    Icons.remove,
-                                    color: Colors.grey[600],
-                                  ),
+                                  Icon(Icons.remove, color: Colors.grey[600]),
                                   Text("State",
                                       style: formElementsHeaderTextStyle),
                                   SizedBox(height: 10),
@@ -561,10 +611,13 @@ class _EnterDistrictState extends State<EnterDistrict> {
                                       itemCount: widget.states!.length,
                                       itemBuilder: (_, index) {
                                         return ListTile(
-                                          title: Text(widget.states!
-                                                  .elementAt(index)
-                                                  .stateName ??
-                                              ""),
+                                          title: Text(
+                                              widget.states!
+                                                      .elementAt(index)
+                                                      .stateName ??
+                                                  "",
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 2),
                                           onTap: () async {
                                             //TODO: Manage: state set by UI refreshes and states remove but still present in provider
                                             state =
@@ -615,30 +668,31 @@ class _EnterDistrictState extends State<EnterDistrict> {
                   padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: Text("State", style: formElementsHeaderTextStyle),
                 ),
-                Container(
-                  margin: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-                  height: 50,
-                  width: state == null ? 50 : 120,
-                  decoration:
-                      BoxDecoration(borderRadius: BorderRadius.circular(15.0)),
-                  child: Center(
-                    child: state == null
-                        ? Icon(Icons.arrow_forward_ios)
-                        : Text(state == null ? "Select" : state!.stateName!),
-                    // Marquee(
-                    //         text: state == null ? "Select" : state!.stateName!,
-                    //         blankSpace: 50.0,
-                    //         velocity: 25.0,
-                    //         fadingEdgeEndFraction: 0.2,
-                    //         fadingEdgeStartFraction: 0.2,
-                    //         showFadingOnlyWhenScrolling: true,
-                    //       ),
+                if (state != null)
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    height: 50,
+                    width: 120,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: Text(state!.stateName!,
+                            textAlign: TextAlign.right,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2),
+                      ),
+                    ),
                   ),
-                ),
+                if (state == null)
+                  Container(
+                      child: Icon(Icons.arrow_forward_ios),
+                      margin: const EdgeInsets.only(
+                          left: 20, right: 30, top: 10, bottom: 10),
+                      height: 50)
               ],
             ),
           ),
-          if (state != null) SizedBox(height: 10),
           if (state != null)
             InkWell(
               onTap: () {
@@ -660,18 +714,13 @@ class _EnterDistrictState extends State<EnterDistrict> {
                             builder: (_, controller) {
                               return Container(
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: const Radius.circular(25.0),
-                                    topRight: const Radius.circular(25.0),
-                                  ),
-                                ),
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.only(
+                                        topLeft: const Radius.circular(25.0),
+                                        topRight: const Radius.circular(25.0))),
                                 child: Column(
                                   children: [
-                                    Icon(
-                                      Icons.remove,
-                                      color: Colors.grey[600],
-                                    ),
+                                    Icon(Icons.remove, color: Colors.grey[600]),
                                     Text("District",
                                         style: formElementsHeaderTextStyle),
                                     SizedBox(height: 10),
@@ -682,10 +731,13 @@ class _EnterDistrictState extends State<EnterDistrict> {
                                         itemCount: districts!.length,
                                         itemBuilder: (_, index) {
                                           return ListTile(
-                                            title: Text(districts!
-                                                    .elementAt(index)
-                                                    .districtName ??
-                                                ""),
+                                            title: Text(
+                                                districts!
+                                                        .elementAt(index)
+                                                        .districtName ??
+                                                    "",
+                                                overflow:
+                                                    TextOverflow.ellipsis),
                                             onTap: () async {
                                               setState(() {
                                                 district =
@@ -726,37 +778,34 @@ class _EnterDistrictState extends State<EnterDistrict> {
                       padding: const EdgeInsets.symmetric(horizontal: 30),
                       child:
                           Text("District", style: formElementsHeaderTextStyle)),
-                  Container(
-                    margin: EdgeInsets.only(
-                        left: 20, right: 15, top: 15, bottom: 15),
-                    height: 50,
-                    width: district == null ? 50 : 150,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15.0)),
-                    child: Center(
-                      child: district == null
-                          ? Icon(Icons.arrow_forward_ios)
-                          : Text(
-                              district == null
-                                  ? "Select"
-                                  : district!.districtName!,
-                            ),
-                      // Marquee(
-                      //         text: district == null
-                      //             ? "Select"
-                      //             : district!.districtName!,
-                      //         fadingEdgeStartFraction: 0.2,
-                      //         showFadingOnlyWhenScrolling: true,
-                      //         fadingEdgeEndFraction: 0.2,
-                      //         velocity: 25.0,
-                      //         blankSpace: 50.0,
-                      //       ),
+                  if (district != null)
+                    Container(
+                      margin: EdgeInsets.only(
+                          left: 20, right: 15, top: 10, bottom: 10),
+                      height: 50,
+                      width: 150,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: Text(district!.districtName!,
+                              textAlign: TextAlign.right,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2),
+                        ),
+                      ),
                     ),
-                  ),
+                  if (district == null)
+                    Container(
+                        child: Icon(Icons.arrow_forward_ios),
+                        margin: const EdgeInsets.only(
+                            left: 20, right: 30, top: 10, bottom: 10),
+                        height: 50)
                 ],
               ),
             ),
-          SizedBox(height: state != null ? 20 : 10)
+          SizedBox(height: 10)
+          //  TODO: Highlight selected state and district in modal sheet
         ],
       ),
     );

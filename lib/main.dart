@@ -1,6 +1,5 @@
 import 'package:cowintrackerindia/provider/api_provider.dart';
 import 'package:cowintrackerindia/provider/platform_channel_provider.dart';
-import 'package:cowintrackerindia/ui/alert_set_confimation.dart';
 import 'package:cowintrackerindia/ui/input_details.dart';
 import 'package:cowintrackerindia/ui/service_running.dart';
 import 'package:cowintrackerindia/ui/splash_screen.dart';
@@ -35,8 +34,6 @@ class MyApp extends StatelessWidget {
           '/': (context) =>
               // ServiceAlreadyRunningPage(),
               SplashScreen(),
-          AlertSetConfirmationPage.routeName: (context) =>
-              AlertSetConfirmationPage(),
           InputDetails.routeName: (context) => InputDetails(),
           ServiceAlreadyRunningPage.routeName: (context) =>
               ServiceAlreadyRunningPage(),

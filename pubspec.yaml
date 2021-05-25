@@ -33,11 +33,13 @@ dependencies:
   loading_indicator: ^2.1.1
   marquee: ^2.1.0
   modal_bottom_sheet: ^2.0.0
+  open_settings: ^2.0.1
   provider: ^5.0.0
   rolling_switch: ^0.0.2
   select_dialog: ^2.0.0
   shared_preferences: ^2.0.5
   toggle_switch: ^0.1.9
+  url_launcher: ^6.0.4
 
 dev_dependencies:
   flutter_test:
@@ -73,7 +75,6 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

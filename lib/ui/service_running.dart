@@ -1,6 +1,10 @@
 import 'package:cowintrackerindia/provider/platform_channel_provider.dart';
+import 'package:cowintrackerindia/ui/input_details.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import 'floating_modal.dart';
 
 class ServiceAlreadyRunningPage extends StatefulWidget {
   const ServiceAlreadyRunningPage({Key? key}) : super(key: key);
@@ -80,59 +84,185 @@ class _ServiceAlreadyRunningPageState extends State<ServiceAlreadyRunningPage>
     super.dispose();
   }
 
-  static Color clayColor = Color(0xFFF2F2F2);
+  TextStyle _textStyle = TextStyle(fontSize: 15);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            await platformChannelProvider!.deleteAlerts();
-          },
-          child: Icon(Icons.delete)),
-      backgroundColor: clayColor,
+      backgroundColor: Color(0xffFCFDFC),
       body: Stack(
         children: [
-          Align(
-            alignment: Alignment.topCenter,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 170),
-              child: Icon(Icons.notifications_none, size: 100),
-            ),
-          ),
           Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                Image.asset("assets/images/notification_animation.gif",
+                    fit: BoxFit.fitWidth),
+                // Padding(
+                //   padding: const EdgeInsets.only(left: 25, right: 25, top: 15),
+                //   child: Text(
+                //       pincode == 000000
+                //           ? 'Alert set for ${cost == 0 ? "" : cost == 1 ? "Free " : "Paid "}${vaccine == "ANY" ? "COVID Vaccine" : vaccine} in $dist, $state${dose == 0 ? " " : dose == 1 ? " for First Dose " : " for Second Dose "}${age == 0 ? " " : age == 1 ? " for Ages 18-45 Years" : " for Ages 45+ Years"}'
+                //           : 'Alert set for ${cost == 0 ? "" : cost == 1 ? "Free " : "Paid "}${vaccine == "ANY" ? "COVID Vaccine" : vaccine} for your Pin Code $pincode${dose == 0 ? " " : dose == 1 ? " for First Dose " : " for Second Dose "}${age == 0 ? " " : age == 1 ? " for Ages 18-45 Years " : " for Ages 45+ Years"}',
+                //       textAlign: TextAlign.center,
+                //       style: _textStyle),
+                // ),
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 40, vertical: 100),
-                  child: Text(
-                      pincode == 000000
-                          ? 'Alert set for ${cost == 0 ? "" : cost == 1 ? "Free" : "Paid"} ${vaccine == "ANY" ? "COVID Vaccine" : vaccine} in $dist, $state for ${dose == 0 ? "" : dose == 1 ? "First Dose" : "Second Dose"} ${age == 0 ? "" : age == 1 ? "for Ages 18-45 Years" : "for Ages 45+ Years"}'
-                          : 'Alert set for ${cost == 0 ? "" : cost == 1 ? "Free" : "Paid"} ${vaccine == "ANY" ? "COVID Vaccine" : vaccine} for your Pin Code $pincode for ${dose == 0 ? "" : dose == 1 ? "First Dose" : "Second Dose"} ${age == 0 ? "" : age == 1 ? "for Ages 18-45 Years" : "for Ages 45+ Years"}',
-                      textAlign: TextAlign.center),
-                ),
-                Container(
-                  color: Colors.grey.withOpacity(0.6),
-                  height: 100,
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  child: Center(
-                      child: Text("Share With Your Friends and Family",
-                          textAlign: TextAlign.center)),
+                    padding:
+                        const EdgeInsets.only(left: 25, right: 25, top: 15),
+                    child: Text(
+                        "We'll notify you, as soon as a preferred slot is available!",
+                        style: _textStyle.copyWith(fontSize: 18),
+                        textAlign: TextAlign.center)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 30),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      SizedBox(width: 10),
+                      Container(
+                        decoration: BoxDecoration(
+                            border: Border.all(
+                                color: Theme.of(context).primaryColor),
+                            borderRadius: BorderRadius.circular(10.0)),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: TextButton(
+                            onPressed: () async {
+                              await platformChannelProvider!.deleteAlerts();
+                              Navigator.pushReplacementNamed(
+                                  context, InputDetails.routeName);
+                            },
+                            child: Text("Delete Alert")),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                            color: Theme.of(context).primaryColor,
+                            borderRadius: BorderRadius.circular(10.0)),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: TextButton(
+                            onPressed: () async {
+                              await showMoreBottomSheet();
+                            },
+                            child: Text("More Details",
+                                style: TextStyle(color: Colors.white))),
+                      ),
+                      SizedBox(width: 10),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
           Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-              child: Text(
-                  "We'll Notify You, As Soon As A Preferred Slot Is Available!",
-                  textAlign: TextAlign.center),
-            ),
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 40),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("An Initiative By ", style: _textStyle),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                          child: Text("Gaurav Dhingra",
+                              style: _textStyle.copyWith(
+                                  color: Theme.of(context).primaryColor,
+                                  fontWeight: FontWeight.bold)),
+                          onTap: () async {
+                            await canLaunch(
+                                    "https://www.linkedin.com/in/gauravxdhingra/")
+                                ? await launch(
+                                    "https://www.linkedin.com/in/gauravxdhingra/")
+                                : print("Can't Launch!");
+                          },
+                        ),
+                        Text(" and ", style: _textStyle),
+                        InkWell(
+                          child: Text("Rahul Jain",
+                              style: _textStyle.copyWith(
+                                  color: Theme.of(context).primaryColor,
+                                  fontWeight: FontWeight.bold)),
+                          onTap: () async {
+                            await canLaunch("https://bit.ly/mRahulJain")
+                                ? await launch("https://bit.ly/mRahulJain")
+                                : print("Can't Launch!");
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              )),
+        ],
+      ),
+    );
+  }
+
+  showMoreBottomSheet() async {
+    await showFloatingModalBottomSheet(
+      context: context,
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: 40),
+          Text("More Details",
+              style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold)),
+          SizedBox(height: 20),
+          Table(
+            children: [
+              TableRow(children: [
+                Text("Vaccine", textAlign: TextAlign.center),
+                Text(vaccine ?? "Any", textAlign: TextAlign.center)
+              ]),
+              if (pincode == 000000)
+                TableRow(children: [
+                  Text("District/State", textAlign: TextAlign.center),
+                  Text(dist! + ", " + state!, textAlign: TextAlign.center)
+                ]),
+              if (pincode != 000000)
+                TableRow(children: [
+                  Text("Pin Code", textAlign: TextAlign.center),
+                  Text(pincode.toString(), textAlign: TextAlign.center)
+                ]),
+              TableRow(children: [
+                Text("Age", textAlign: TextAlign.center),
+                Text(
+                    age == 0
+                        ? "Any"
+                        : age == 1
+                            ? "18-45 Years"
+                            : "45+ Years",
+                    textAlign: TextAlign.center)
+              ]),
+              TableRow(children: [
+                Text("Dose", textAlign: TextAlign.center),
+                Text(
+                    age == 0
+                        ? "Any"
+                        : dose == 1
+                            ? "First Dose"
+                            : "Second Dose",
+                    textAlign: TextAlign.center)
+              ]),
+              TableRow(children: [
+                Text("Cost", textAlign: TextAlign.center),
+                Text(
+                    cost == 0
+                        ? "Any"
+                        : cost == 1
+                            ? "Free"
+                            : "Paid",
+                    textAlign: TextAlign.center)
+              ]),
+            ],
           ),
+          SizedBox(height: 30),
         ],
       ),
     );

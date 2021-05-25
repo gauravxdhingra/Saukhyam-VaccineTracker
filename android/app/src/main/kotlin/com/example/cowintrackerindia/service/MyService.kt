@@ -76,7 +76,8 @@ class MyService : Service() {
                 check()
             }
         }
-        timer!!.schedule(timerTask, 20 * 1000, 1 * 60 * 1000)
+//        TODO: TIMER -> RELEASE
+        timer!!.schedule(timerTask, 5 * 60 * 1000, 5 * 60 * 1000)
     }
 
     private fun stopTimerTask() {
@@ -124,6 +125,7 @@ class MyService : Service() {
             override fun onResponse(call: Call<Model>, response: Response<Model>) {
                 if (response.isSuccessful) {
                     Log.d("myCHECK", "response successful --> ")
+
                     val model = response.body()!!
                     if(model.centers == null) {
                         Log.d("myCHECK", "centers null")
@@ -145,6 +147,11 @@ class MyService : Service() {
                         if(flag) {
                             break
                         }
+//                        else{
+////                            TODO: REMOVE THIS ELSE IN RELEASE
+//                            notifyUser("Vaccines Not Available!", "We'll notify you once vaccines are available!")
+//                            break
+//                        }
                     }
                 } else {
                     Log.d("myCHECK", "response not successful --> " + response.raw())
@@ -176,6 +183,11 @@ class MyService : Service() {
                         if(flag) {
                             break
                         }
+//                        else{
+////                            TODO: REMOVE THIS ELSE IN RELEASE
+//                            notifyUser("Vaccines Not Available!", "We'll notify you once vaccines are available!")
+//                            break
+//                        }
                     }
                 } else {
                     Log.d("myCHECK", "response not successful --> " + response.raw())
@@ -315,7 +327,7 @@ class MyService : Service() {
         return NotificationCompat.Builder(this, "101")
             .setOngoing(true)
             .setContentTitle("Vaccine Alert Set")
-            .setContentText("We will notify you as soon as the slots get available!")
+            .setContentText("We will notify you as soon as vaccines are available!")
             .setSmallIcon(R.drawable.launch_background)
             .build()
     }

@@ -72,10 +72,10 @@ class PlatformChannelProvider with ChangeNotifier {
       await setServiceRunning(true);
       await setAge(age);
       await setDistCode(getDistrictCodeProv!);
-      await setDistName("");
+      await setDistName(getStateNameProv!);
       await setPincode(000000);
       await setStateCode(0);
-      await setStateName("");
+      await setStateName(getStateNameProv!);
       await setVaccine(vaccine);
       await setDose(dose);
       await setCost(cost);
