@@ -76,7 +76,7 @@ class MyService : Service() {
                 check()
             }
         }
-        timer!!.schedule(timerTask, 1 * 60 * 1000, 1 * 60 * 1000)
+        timer!!.schedule(timerTask, 20 * 1000, 1 * 60 * 1000)
     }
 
     private fun stopTimerTask() {
@@ -126,11 +126,13 @@ class MyService : Service() {
                     Log.d("myCHECK", "response successful --> ")
                     val model = response.body()!!
                     if(model.centers == null) {
+                        Log.d("myCHECK", "centers null")
                         return
                     }
                     for(center in model.centers) {
                         var flag = false
                         if(center.sessions == null) {
+                            Log.d("myCHECK", "sessions null")
                             continue
                         }
                         for(session in center.sessions) {
@@ -311,6 +313,7 @@ class MyService : Service() {
             )
         }
         return NotificationCompat.Builder(this, "101")
+            .setOngoing(true)
             .setContentTitle("Vaccine Alert Set")
             .setContentText("We will notify you as soon as the slots get available!")
             .setSmallIcon(R.drawable.launch_background)

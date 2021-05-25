@@ -1,9 +1,14 @@
 package com.example.cowintrackerindia.model
 
+import androidx.annotation.Keep
+
+@Keep
 data class Model(
     val centers: ArrayList<Center>
 );
 
+
+@Keep
 data class Center(
     val center_id: Int,
     val name: String,
@@ -18,6 +23,8 @@ data class Center(
     val sessions: ArrayList<Session>
 );
 
+
+@Keep
 data class Session(
     val session_id: String,
     val date: String,
