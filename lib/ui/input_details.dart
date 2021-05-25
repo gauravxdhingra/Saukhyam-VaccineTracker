@@ -1,4 +1,3 @@
-import 'package:clay_containers/clay_containers.dart';
 import 'package:cowintrackerindia/models/districts/districts.dart';
 import 'package:cowintrackerindia/models/states/state.dart';
 import 'package:cowintrackerindia/provider/api_provider.dart';
@@ -8,10 +7,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
+import 'package:flutter_toggle_tab/flutter_toggle_tab.dart';
 import 'package:loading_indicator/loading_indicator.dart';
-import 'package:marquee/marquee.dart';
 import 'package:provider/provider.dart';
-import 'package:select_dialog/select_dialog.dart';
 
 import 'floating_modal.dart';
 
@@ -34,36 +32,48 @@ class _InputDetailsState extends State<InputDetails> {
 
   List<StateInfo>? states = [];
 
-  Map<String, Function> formElementsMap = {};
-
   List<String> listVaccine = ['ANY', 'COVISHIELD', 'COVAXIN', 'SPUTNIK V'];
   List<String> listAges = ['Any', 'Ages 18 - 45', 'Ages 45 +'];
   List<String> listDose = ['Any', 'First Dose', 'Second Dose'];
   List<String> listCost = ['Any', 'Free', 'Paid'];
 
-  int? iVaccine;
-  int? iAge;
-  int? iDose;
-  int? iCost;
+  List<String> listVaccineUrl = [
+    'generic.png',
+    'covishield.png',
+    'covaxin.png',
+    'sputnikv.png'
+  ];
 
-  Color clayColor = Color(0xFFF2F2F2);
+  int? iVaccine = 0;
+  int? iAge = 0;
+  int? iDose = 0;
+  int? iCost = 0;
+
+  TextStyle? formElementsHeaderTextStyle;
+  TextStyle? modalSheetHeader;
+  TextStyle? labelTextStyle;
 
   @override
   void didChangeDependencies() async {
     if (!_init) {
+      labelTextStyle = TextStyle(
+          fontWeight: FontWeight.w400,
+          fontSize: 16,
+          color: Theme.of(context).primaryColor);
+      formElementsHeaderTextStyle = TextStyle(
+          fontSize: 19,
+          color: Theme.of(context).primaryColor,
+          fontWeight: FontWeight.bold);
+      modalSheetHeader = TextStyle(
+          fontSize: 22,
+          color: Theme.of(context).primaryColor,
+          fontWeight: FontWeight.bold);
+
+      platformChannelProvider = Provider.of<PlatformChannelProvider>(context);
       apiProvider = Provider.of<ApiProvider>(context);
       StatesList statesData = await apiProvider!.getStates();
       states = statesData.states;
 
-      platformChannelProvider =
-          Provider.of<PlatformChannelProvider>(context, listen: false);
-
-      formElementsMap = {
-        "Vaccine": showVaccineBottomSheet,
-        "Age Group": showAgeBottomSheet,
-        "Dose": showDoseBottomSheet,
-        "Cost": showCostBottomSheet,
-      };
       setState(() {
         _init = true;
         apiProvider!.setLoading = false;
@@ -77,43 +87,25 @@ class _InputDetailsState extends State<InputDetails> {
     return districts.districts;
   }
 
-  TextStyle formElementsHeaderTextStyle =
-      TextStyle(fontSize: 17, color: Colors.black.withOpacity(0.7));
-
-  TextStyle modalSheetHeader =
-      TextStyle(fontSize: 22, color: Colors.black.withOpacity(0.7));
-
-  TextStyle modalPreviewItemsTextStyle = TextStyle(fontSize: 17);
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: clayColor,
         appBar: AppBar(
-          backgroundColor: clayColor,
-          title: Text(
-            "CoWIN Notifier",
-            style: TextStyle(color: Colors.black.withOpacity(0.4)),
-          ),
+          title: Text("CoWIN Notifier",
+              style: TextStyle(color: Theme.of(context).primaryColor)),
+          backgroundColor: apiProvider!.getLoading
+              ? Theme.of(context).primaryColor.withOpacity(0.4)
+              : Theme.of(context).scaffoldBackgroundColor,
           elevation: 0,
           centerTitle: true,
           actions: [
             GestureDetector(
-              onTap: () async {
-                await platformChannelProvider!.deleteAlerts();
-              },
-              child: Container(
-                color: clayColor,
-                padding: EdgeInsets.symmetric(vertical: 7, horizontal: 7),
-                child: ClayContainer(
-                  child: Icon(Icons.more_vert, color: Colors.grey),
-                  borderRadius: 10.0,
-                  color: clayColor,
-                  width: 40,
-                ),
-              ),
-            ),
+                onTap: () async {
+                  await platformChannelProvider!.deleteAlerts();
+                },
+                child: Icon(Icons.more_vert,
+                    color: Theme.of(context).primaryColor)),
           ],
         ),
         body: Stack(
@@ -125,118 +117,154 @@ class _InputDetailsState extends State<InputDetails> {
                   SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: NeumorphicToggle(
-                      children: [
-                        ToggleElement(
-                          foreground: Center(child: Text("PIN Code")),
-                          background: Center(
-                              child: Text(
-                            "PIN Code",
-                            style:
-                                TextStyle(color: Colors.black.withOpacity(0.4)),
-                          )),
-                        ),
-                        ToggleElement(
-                          foreground: Center(child: Text("State/District")),
-                          background: Center(
-                              child: Text(
-                            "State/District",
-                            style:
-                                TextStyle(color: Colors.black.withOpacity(0.4)),
-                          )),
-                        )
-                      ],
-                      thumb: Neumorphic(
-                        style: NeumorphicStyle(
-                          boxShape: NeumorphicBoxShape.roundRect(
-                              BorderRadius.all(Radius.circular(15))),
-                        ),
-                      ),
-                      isEnabled: true,
-                      onChanged: (int newIdx) {
-                        setState(() {
-                          _locationMode = LocationMode.values.elementAt(newIdx);
-                        });
-                      },
+                    child: FlutterToggleTab(
+                      width: MediaQuery.of(context).size.width * 0.2,
+                      borderRadius: 15,
+                      initialIndex: 0,
+                      selectedTextStyle: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.w600),
+                      unSelectedTextStyle: TextStyle(
+                          color:
+                              Theme.of(context).primaryColor.withOpacity(0.8),
+                          fontWeight: FontWeight.w400),
                       selectedIndex: _locationMode.index,
+                      labels: ["PIN Code", "State/District"],
+                      icons: [Icons.mail_outline, Icons.location_city],
+                      selectedBackgroundColors: [
+                        Theme.of(context).primaryColor,
+                        Theme.of(context).primaryColor
+                      ],
+                      unSelectedBackgroundColors: [
+                        Theme.of(context).primaryColor.withOpacity(0.3),
+                        Theme.of(context).primaryColor.withOpacity(0.3)
+                      ],
+                      selectedLabelIndex: (index) {
+                        setState(() {
+                          _locationMode = LocationMode.values.elementAt(index);
+                        });
+                        print("Selected Index $index");
+                      },
                     ),
                   ),
                   SizedBox(height: 40),
                   _locationMode == LocationMode.ByPIN
                       ? EnterPinCode(
-                          platformChannelProvider: platformChannelProvider)
+                          platformChannelProvider: platformChannelProvider,
+                          context: context)
                       : EnterDistrict(
                           states: states,
                           apiProvider: apiProvider,
                           platformChannelProvider: platformChannelProvider),
                   if (_locationMode == LocationMode.ByPIN) SizedBox(height: 10),
-                  for (int i = 0; i < formElementsMap.length; i++)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20, right: 15),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(height: 15),
-                          formElementsBuilder(formElementsMap.keys.elementAt(i),
-                              formElementsMap.values.elementAt(i)),
-                        ],
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 15),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 30),
+                        child:
+                            Text("Vaccine", style: formElementsHeaderTextStyle),
+                      ),
+                      SizedBox(height: 20),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: BouncingScrollPhysics(),
+                        child: Row(
+                          children: [
+                            SizedBox(width: 15),
+                            for (int i = 0; i < listVaccine.length; i++)
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 15),
+                                child: vaccinePreview(
+                                    listVaccine[i], listVaccineUrl[i], () {
+                                  setState(() {
+                                    iVaccine = i;
+                                    print(listVaccine[i]);
+                                  });
+                                }),
+                              ),
+                            SizedBox(width: 15),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 30),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 20),
+                      Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 30),
+                          child: Text("Age Group",
+                              style: formElementsHeaderTextStyle)),
+                      SizedBox(height: 10),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: BouncingScrollPhysics(),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            SizedBox(width: 20),
+                            for (int i = 0; i < listAges.length; i++)
+                              textTagOptions(listAges[i], i == iAge, () {
+                                setState(() => iAge = i);
+                              })
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 15),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 0),
+                    child: InkWell(
+                      onTap: () => showMoreBottomSheet(),
+                      child: Container(
+                        padding:
+                            EdgeInsets.symmetric(vertical: 20, horizontal: 30),
+                        // color: Colors.red,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text("More", style: formElementsHeaderTextStyle),
+                            Icon(Icons.arrow_forward_ios),
+                          ],
+                        ),
                       ),
                     ),
-                  SizedBox(height: 100),
+                  ),
+                  SizedBox(height: 200),
                 ],
               ),
             ),
             Align(
               alignment: Alignment.bottomCenter,
               child: Container(
-                height: 50,
-                margin: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                height: 60,
+                margin: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
                 decoration: BoxDecoration(
                     color: Theme.of(context).primaryColor,
-                    borderRadius: BorderRadius.all(Radius.circular(10.0))),
-                child: ClayContainer(
-                  color: clayColor,
-                  child: TextButton(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.notifications_none),
-                        SizedBox(width: 5),
-                        Text("Get Notified"),
-                      ],
-                    ),
-                    onPressed: () async {
-                      if (_locationMode == LocationMode.ByPIN) {
-                        if (platformChannelProvider!.getPincodeProv != null) {
-                          if (platformChannelProvider!.getPincodeProv! >
-                                  110000 &&
-                              platformChannelProvider!.getPincodeProv! <
-                                  999999) {
-                            await platformChannelProvider!.registerWithPinCode(
-                                listVaccine[iVaccine ?? 0],
-                                iAge ?? 0,
-                                iDose ?? 0,
-                                iCost ?? 0);
-                            Navigator.pushReplacementNamed(
-                                context, ServiceAlreadyRunningPage.routeName,
-                                arguments: {
-                                  "vaccine": listVaccine[iVaccine ?? 0],
-                                  "age": iAge ?? 0,
-                                  "dose": iDose ?? 0,
-                                  "cost": iCost ?? 0,
-                                  "pincode":
-                                      platformChannelProvider!.getPincodeProv
-                                });
-                          } else {
-                            //  TODO: SnackBar: Enter a valid pincode
-                          }
-                        } else {
-                          //  TODO: SnackBar: Enter a pincode
-                        }
-                      } else if (_locationMode == LocationMode.ByDistrict) {
-                        if (platformChannelProvider!.getDistrictCodeProv !=
-                            null) {
-                          await platformChannelProvider!.registerWithDistrictId(
+                    borderRadius: BorderRadius.all(Radius.circular(30.0))),
+                child: TextButton(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.notifications_none, color: Colors.white),
+                      SizedBox(width: 5),
+                      Text("Get Notified",
+                          style: TextStyle(color: Colors.white, fontSize: 20)),
+                    ],
+                  ),
+                  onPressed: () async {
+                    if (_locationMode == LocationMode.ByPIN) {
+                      if (platformChannelProvider!.getPincodeProv != null) {
+                        if (platformChannelProvider!.getPincodeProv! > 110000 &&
+                            platformChannelProvider!.getPincodeProv! < 999999) {
+                          await platformChannelProvider!.registerWithPinCode(
                               listVaccine[iVaccine ?? 0],
                               iAge ?? 0,
                               iDose ?? 0,
@@ -248,22 +276,45 @@ class _InputDetailsState extends State<InputDetails> {
                                 "age": iAge ?? 0,
                                 "dose": iDose ?? 0,
                                 "cost": iCost ?? 0,
-                                "district":
-                                    platformChannelProvider!.getDistNameProv,
-                                "state":
-                                    platformChannelProvider!.getStateNameProv,
-                                "pincode": 000000
+                                "pincode":
+                                    platformChannelProvider!.getPincodeProv
                               });
+                        } else {
+                          //  TODO: SnackBar: Enter a valid pincode
                         }
+                      } else {
+                        //  TODO: SnackBar: Enter a pincode
                       }
-                    },
-                  ),
+                    } else if (_locationMode == LocationMode.ByDistrict) {
+                      if (platformChannelProvider!.getDistrictCodeProv !=
+                          null) {
+                        await platformChannelProvider!.registerWithDistrictId(
+                            listVaccine[iVaccine ?? 0],
+                            iAge ?? 0,
+                            iDose ?? 0,
+                            iCost ?? 0);
+                        Navigator.pushReplacementNamed(
+                            context, ServiceAlreadyRunningPage.routeName,
+                            arguments: {
+                              "vaccine": listVaccine[iVaccine ?? 0],
+                              "age": iAge ?? 0,
+                              "dose": iDose ?? 0,
+                              "cost": iCost ?? 0,
+                              "district":
+                                  platformChannelProvider!.getDistNameProv,
+                              "state":
+                                  platformChannelProvider!.getStateNameProv,
+                              "pincode": 000000
+                            });
+                      }
+                    }
+                  },
                 ),
               ),
             ),
             if (apiProvider!.getLoading)
               Container(
-                color: Colors.black.withOpacity(0.3),
+                color: Theme.of(context).primaryColor.withOpacity(0.4),
                 width: MediaQuery.of(context).size.width,
                 height: MediaQuery.of(context).size.height,
                 child: Center(
@@ -272,7 +323,7 @@ class _InputDetailsState extends State<InputDetails> {
                     height: 100,
                     child: LoadingIndicator(
                       indicatorType: Indicator.ballScaleMultiple,
-                      color: clayColor,
+                      color: Theme.of(context).primaryColor,
                     ),
                   ),
                 ),
@@ -283,299 +334,148 @@ class _InputDetailsState extends State<InputDetails> {
     );
   }
 
-  Row formElementsBuilder(String title, Function onPress) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(title, style: formElementsHeaderTextStyle),
-        GestureDetector(
-          onTap: () => onPress(),
-          child: Container(
-            margin: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
-            height: 50,
-            width: getFormButtonText(title) == "Choose" ? 50 : 120,
-            child: ClayContainer(
-                child: Center(
-                  child: getFormButtonText(title) != "Choose"
-                      ? Text(getFormButtonText(title))
-                      : Icon(Icons.arrow_forward_ios),
-                ),
-                color: clayColor,
-                borderRadius: 15.0),
-          ),
-        ),
-      ],
-    );
-  }
-
-  String getFormButtonText(String title) {
-    switch (title) {
-      case "Vaccine":
-        if (iVaccine == null)
-          return "Choose";
-        else
-          return listVaccine[iVaccine!];
-      case "Age Group":
-        if (iAge == null)
-          return "Choose";
-        else
-          return listAges[iAge!];
-      case "Dose":
-        if (iDose == null)
-          return "Choose";
-        else
-          return listDose[iDose!];
-      case "Cost":
-        if (iCost == null)
-          return "Choose";
-        else
-          return listCost[iCost!];
-      default:
-        return "Choose";
-    }
-  }
-
-  void bottomSheet(String heading, Widget child) {
-    showFloatingModalBottomSheet(
-      context: context,
-      backgroundColor: clayColor,
-      builder: (context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(height: 40),
-          Text(heading, style: modalSheetHeader),
-          SizedBox(height: 20),
-          child,
-          SizedBox(height: 20)
-        ],
-      ),
-    );
-  }
-
-  showVaccineBottomSheet() {
-    bottomSheet(
-      "Vaccine",
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        physics: BouncingScrollPhysics(),
-        child: Row(
-          children: [
-            SizedBox(width: 30),
-            vaccinePreview("ANY", "dose1.png", () {
-              setState(() => iVaccine = 0);
-            }),
-            SizedBox(width: 30),
-            vaccinePreview("COVISHIELD", "covishield.png", () {
-              setState(() => iVaccine = 1);
-            }),
-            SizedBox(width: 30),
-            vaccinePreview("COVAXIN", "covaxin.jpg", () {
-              setState(() => iVaccine = 2);
-            }),
-            SizedBox(width: 30),
-            vaccinePreview("SPUTNIK V", "sputnikv.png", () {
-              setState(() => iVaccine = 3);
-            }),
-            SizedBox(width: 30),
-          ],
-        ),
-      ),
-    );
-  }
-
-  showAgeBottomSheet() {
-    bottomSheet(
-      "Age Group",
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        physics: BouncingScrollPhysics(),
-        child: Row(
-          children: [
-            SizedBox(width: 30),
-            agePreview("Any", () {
-              setState(() => iAge = 0);
-            }),
-            SizedBox(width: 30),
-            agePreview("18-45 Years", () {
-              setState(() => iAge = 1);
-            }),
-            SizedBox(width: 30),
-            agePreview("45+ Years", () {
-              setState(() => iAge = 2);
-            }),
-            SizedBox(width: 30),
-          ],
-        ),
-      ),
-    );
-  }
-
-  showDoseBottomSheet() {
-    bottomSheet(
-      "Dose",
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        physics: BouncingScrollPhysics(),
-        child: Row(
-          children: [
-            SizedBox(width: 30),
-            //TODO: Option: ANY
-            dosePreview("Any", "dose1.png", () {
-              setState(() => iDose = 0);
-            }),
-            SizedBox(width: 30),
-            dosePreview("First Dose", "dose1.png", () {
-              setState(() => iDose = 1);
-            }),
-            SizedBox(width: 30),
-            dosePreview("Second Dose", "dose2.jpg", () {
-              setState(() => iDose = 2);
-            }),
-            SizedBox(width: 30),
-          ],
-        ),
-      ),
-    );
-  }
-
-  showCostBottomSheet() {
-    bottomSheet(
-      "Cost",
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        physics: BouncingScrollPhysics(),
-        child: Row(
-          children: [
-            SizedBox(width: 30),
-            costPreview("Any", () {
-              setState(() => iCost = 0);
-            }),
-            SizedBox(width: 30),
-            costPreview("Free", () {
-              setState(() => iCost = 1);
-            }),
-            SizedBox(width: 30),
-            costPreview("Paid", () {
-              setState(() => iCost = 2);
-            }),
-            SizedBox(width: 30),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Container agePreview(String ageText, Function onPress) {
+  Container textTagOptions(String tagText, bool active, Function onPress) {
     return Container(
       child: GestureDetector(
-          onTap: () {
-            onPress();
-            // setState(() {});
-            Navigator.pop(context);
-          },
-          child: Container(
-            margin: EdgeInsets.symmetric(vertical: 10),
-            child: ClayContainer(
-                child: Center(
-                    child: Text(ageText, style: modalPreviewItemsTextStyle)),
-                height: 50,
-                width: 120,
-                borderRadius: 15.0,
-                color: clayColor),
+          onTap: () => onPress(),
+          child: AnimatedContainer(
+            duration: Duration(milliseconds: 300),
+            decoration: BoxDecoration(
+                border: active
+                    ? Border.all(
+                        color: Theme.of(context).primaryColor, width: 2)
+                    : Border.all(
+                        color: Theme.of(context).primaryColor.withOpacity(0.7),
+                        width: 1),
+                borderRadius: BorderRadius.circular(10.0)),
+            margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+            child: Center(
+                child: Text(tagText,
+                    style: active
+                        ? labelTextStyle
+                        : labelTextStyle!.copyWith(
+                            color: Theme.of(context)
+                                .primaryColor
+                                .withOpacity(0.7)))),
           )),
     );
   }
 
-  Container vaccinePreview(
+  AnimatedContainer vaccinePreview(
       String vaccineName, String assetURL, Function onPress) {
-    return Container(
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(20.0)),
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 300),
+      decoration: BoxDecoration(
+          color: vaccineName == listVaccine[iVaccine!]
+              ? Theme.of(context).scaffoldBackgroundColor
+              : Theme.of(context).primaryColor.withOpacity(0.05),
+          border: vaccineName == listVaccine[iVaccine!]
+              ? Border.all(color: Theme.of(context).primaryColor, width: 2)
+              : null,
+          borderRadius: BorderRadius.circular(15.0)),
       child: GestureDetector(
-        onTap: () {
-          onPress();
-          // setState(() {});
-          Navigator.pop(context);
-        },
+        onTap: () => onPress(),
         child: Container(
-          margin: EdgeInsets.symmetric(vertical: 10),
-          child: ClayContainer(
-            borderRadius: 15.0,
-            color: Colors.white,
-            // clayColor,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(15.0),
-                  child: Image.asset("assets/images/" + assetURL,
-                      height: 170, fit: BoxFit.fitHeight),
-                ),
-                SizedBox(height: 10),
-                Text(vaccineName, style: modalPreviewItemsTextStyle),
-                SizedBox(height: 10),
-              ],
-            ),
+          height: 150,
+          width: 110,
+          margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(height: 1),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(15.0),
+                child: Image.asset("assets/images/" + assetURL,
+                    height: 100, fit: BoxFit.fitHeight),
+              ),
+              SizedBox(height: 10),
+              Text(vaccineName, style: labelTextStyle),
+              SizedBox(height: 10),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Container dosePreview(String dose, String assetURL, Function onPress) {
-    return Container(
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(20.0)),
-      child: GestureDetector(
-        onTap: () {
-          onPress();
-          // setState(() {});
-          Navigator.pop(context);
-        },
-        child: Container(
-          margin: EdgeInsets.symmetric(vertical: 10),
-          child: ClayContainer(
-            color: Colors.white,
-            // clayColor,
-            borderRadius: 15.0,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+  showMoreBottomSheet() async {
+    int? iBSDose = iDose;
+    int? iBSCost = iCost;
+    await showFloatingModalBottomSheet(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (BuildContext context, StateSetter setModalState) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 40),
+            Text("More", style: modalSheetHeader),
+            SizedBox(height: 20),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(15.0),
-                  child: Image.asset("assets/images/" + assetURL,
-                      height: 170, fit: BoxFit.fitHeight),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Text("Dose", style: formElementsHeaderTextStyle),
                 ),
-                SizedBox(height: 10),
-                Text(dose, style: modalPreviewItemsTextStyle),
-                SizedBox(height: 10),
+                SingleChildScrollView(
+                  physics: BouncingScrollPhysics(),
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      SizedBox(width: 10),
+                      for (int i = 0; i < listDose.length; i++)
+                        textTagOptions(listDose[i], i == iBSDose, () {
+                          setModalState(() => iBSDose = i);
+                        }),
+                      SizedBox(width: 10),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Text("Cost", style: formElementsHeaderTextStyle),
+                ),
+                SingleChildScrollView(
+                  physics: BouncingScrollPhysics(),
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      SizedBox(width: 10),
+                      for (int i = 0; i < listCost.length; i++)
+                        textTagOptions(listCost[i], i == iBSCost, () {
+                          setModalState(() => iBSCost = i);
+                        }),
+                      SizedBox(width: 10),
+                    ],
+                  ),
+                ),
               ],
             ),
-          ),
+            SizedBox(height: 30),
+            Container(
+              // height: 60,
+              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 0),
+              decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                  borderRadius: BorderRadius.all(Radius.circular(30.0))),
+              child: TextButton(
+                child: Text("Done",
+                    style: TextStyle(color: Colors.white, fontSize: 18)),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+            SizedBox(height: 30),
+          ],
         ),
       ),
     );
-  }
-
-  Container costPreview(String costText, Function onPress) {
-    return Container(
-      child: GestureDetector(
-        onTap: () {
-          onPress();
-          // setState(() {});
-          Navigator.pop(context);
-        },
-        child: Container(
-          color: clayColor,
-          margin: EdgeInsets.symmetric(vertical: 10),
-          child: ClayContainer(
-            child: Center(
-                child: Text(costText, style: modalPreviewItemsTextStyle)),
-            height: 50,
-            width: 100,
-            borderRadius: 15.0,
-          ),
-        ),
-      ),
-    );
+    setState(() {
+      iCost = iBSCost;
+      iDose = iBSDose;
+    });
   }
 }
 
@@ -594,242 +494,343 @@ class EnterDistrict extends StatefulWidget {
 class _EnterDistrictState extends State<EnterDistrict> {
   StateInfo? state;
   District? district;
+  bool _init = false;
 
   List<District>? districts;
 
   Color clayColor = Color(0xFFF2F2F2);
-  TextStyle formElementsHeaderTextStyle =
-      TextStyle(fontSize: 17, color: Colors.black.withOpacity(0.7));
+  TextStyle? formElementsHeaderTextStyle;
+
+  @override
+  void didChangeDependencies() {
+    if (!_init) {
+      formElementsHeaderTextStyle = TextStyle(
+          fontSize: 19,
+          color: Theme.of(context).primaryColor,
+          fontWeight: FontWeight.bold);
+      setState(() {
+        _init = true;
+      });
+    }
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 20, right: 15),
-      child: Container(
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("State", style: formElementsHeaderTextStyle),
-                GestureDetector(
-                  child: Container(
-                    margin: EdgeInsets.symmetric(horizontal: 5, vertical: 15),
-                    child: ClayContainer(
-                      color: clayColor,
-                      height: 50,
-                      width: state == null ? 50 : 120,
-                      borderRadius: 15.0,
-                      child: Center(
-                        child: state == null
-                            ? Icon(Icons.arrow_forward_ios)
-                            : Marquee(
-                                text: state == null
-                                    ? "Select"
-                                    : state!.stateName! +
-                                        " (" +
-                                        state!.stateId.toString() +
-                                        ")",
-                                blankSpace: 50.0,
-                                velocity: 25.0,
-                                fadingEdgeEndFraction: 0.2,
-                                fadingEdgeStartFraction: 0.2,
-                                showFadingOnlyWhenScrolling: true,
-                              ),
-                      ),
-                    ),
-                  ),
-                  onTap: () {
-                    SelectDialog.showModal<StateInfo>(
-                      context,
-                      label: "Select State",
-                      items: widget.states,
-                      selectedValue: state,
-                      itemBuilder: (BuildContext context, StateInfo item,
-                          bool isSelected) {
-                        return Container(
-                          decoration: !isSelected
-                              ? null
-                              : BoxDecoration(
-                                  borderRadius: BorderRadius.circular(5),
-                                  color: Colors.white,
-                                  border: Border.all(
-                                    color: Theme.of(context).primaryColor,
-                                  ),
-                                ),
-                          child: ListTile(
-                            // leading: CircleAvatar(
-                            //   backgroundImage: NetworkImage(item.stateName),
-                            // ),
-                            selected: isSelected,
-                            title: Text(item.stateName.toString()),
-                            subtitle: Text(item.stateId.toString()),
-                          ),
-                        );
-                      },
-                      onChange: (selected) async {
-                        //TODO: Manage: state set by UI refreshes and states remove but still present in provider
-                        state = selected;
-                        district = null;
-                        widget.platformChannelProvider!.setStateNameProv =
-                            state!.stateName!;
-                        widget.platformChannelProvider!.setDistrictCodeProv =
-                            null;
-                        widget.platformChannelProvider!.setDistNameProv = "";
-
-                        widget.apiProvider!.setLoading = true;
-                        Districts districtsData = await widget.apiProvider!
-                            .getDistrictsByStateId(state!.stateId ?? 0);
-                        districts = districtsData.districts;
-                        print(state!.stateId.toString() +
-                            " " +
-                            state!.stateName.toString());
-                        widget.apiProvider!.setLoading = false;
-                        setState(() {});
-                      },
-                    );
-                  },
-                ),
-              ],
-            ),
-            if (state != null) SizedBox(height: 10),
-            if (state != null)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("District", style: formElementsHeaderTextStyle),
-                  GestureDetector(
+    return Container(
+      child: Column(
+        children: [
+          InkWell(
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) {
+                  return GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
                     child: Container(
-                      margin: EdgeInsets.only(
-                          left: 20, right: 5, top: 15, bottom: 15),
-                      child: ClayContainer(
-                        color: clayColor,
-                        height: 50,
-                        width: district == null ? 50 : 120,
-                        borderRadius: 15.0,
-                        child: Center(
-                          child: district == null
-                              ? Icon(Icons.arrow_forward_ios)
-                              : Marquee(
-                                  text: district == null
-                                      ? "Select"
-                                      : district!.districtName! +
-                                          " (" +
-                                          district!.districtId.toString() +
-                                          ")",
-                                  fadingEdgeStartFraction: 0.2,
-                                  showFadingOnlyWhenScrolling: true,
-                                  fadingEdgeEndFraction: 0.2,
-                                  velocity: 25.0,
-                                  blankSpace: 50.0,
+                      color: Color.fromRGBO(0, 0, 0, 0.001),
+                      child: GestureDetector(
+                        onTap: () {},
+                        child: DraggableScrollableSheet(
+                          initialChildSize: 0.7,
+                          minChildSize: 0.5,
+                          maxChildSize: 0.7,
+                          builder: (_, controller) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.only(
+                                  topLeft: const Radius.circular(25.0),
+                                  topRight: const Radius.circular(25.0),
                                 ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.remove,
+                                    color: Colors.grey[600],
+                                  ),
+                                  Text("State",
+                                      style: formElementsHeaderTextStyle),
+                                  SizedBox(height: 10),
+                                  Expanded(
+                                    child: ListView.builder(
+                                      controller: controller,
+                                      itemCount: widget.states!.length,
+                                      itemBuilder: (_, index) {
+                                        return ListTile(
+                                          title: Text(widget.states!
+                                                  .elementAt(index)
+                                                  .stateName ??
+                                              ""),
+                                          onTap: () async {
+                                            //TODO: Manage: state set by UI refreshes and states remove but still present in provider
+                                            state =
+                                                widget.states!.elementAt(index);
+                                            district = null;
+                                            widget.platformChannelProvider!
+                                                    .setStateNameProv =
+                                                state!.stateName!;
+                                            widget.platformChannelProvider!
+                                                .setDistrictCodeProv = null;
+                                            widget.platformChannelProvider!
+                                                .setDistNameProv = "";
+
+                                            widget.apiProvider!.setLoading =
+                                                true;
+                                            Districts districtsData =
+                                                await widget.apiProvider!
+                                                    .getDistrictsByStateId(
+                                                        state!.stateId ?? 0);
+                                            districts = districtsData.districts;
+                                            print(state!.stateId.toString() +
+                                                " " +
+                                                state!.stateName.toString());
+                                            widget.apiProvider!.setLoading =
+                                                false;
+                                            setState(() {});
+                                            Navigator.pop(context);
+                                          },
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),
-                    onTap: () {
-                      SelectDialog.showModal<District>(
-                        context,
-                        label: "Select District",
-                        items: districts,
-                        selectedValue: district,
-                        itemBuilder: (BuildContext context, District item,
-                            bool isSelected) {
-                          return Container(
-                            decoration: !isSelected
-                                ? null
-                                : BoxDecoration(
-                                    borderRadius: BorderRadius.circular(5),
-                                    color: Colors.white,
-                                    border: Border.all(
-                                      color: Theme.of(context).primaryColor,
-                                    ),
+                  );
+                },
+              );
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: Text("State", style: formElementsHeaderTextStyle),
+                ),
+                Container(
+                  margin: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                  height: 50,
+                  width: state == null ? 50 : 120,
+                  decoration:
+                      BoxDecoration(borderRadius: BorderRadius.circular(15.0)),
+                  child: Center(
+                    child: state == null
+                        ? Icon(Icons.arrow_forward_ios)
+                        : Text(state == null ? "Select" : state!.stateName!),
+                    // Marquee(
+                    //         text: state == null ? "Select" : state!.stateName!,
+                    //         blankSpace: 50.0,
+                    //         velocity: 25.0,
+                    //         fadingEdgeEndFraction: 0.2,
+                    //         fadingEdgeStartFraction: 0.2,
+                    //         showFadingOnlyWhenScrolling: true,
+                    //       ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (state != null) SizedBox(height: 10),
+          if (state != null)
+            InkWell(
+              onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) {
+                    return GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Container(
+                        color: Color.fromRGBO(0, 0, 0, 0.001),
+                        child: GestureDetector(
+                          onTap: () {},
+                          child: DraggableScrollableSheet(
+                            initialChildSize: 0.7,
+                            minChildSize: 0.5,
+                            maxChildSize: 0.7,
+                            builder: (_, controller) {
+                              return Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: const Radius.circular(25.0),
+                                    topRight: const Radius.circular(25.0),
                                   ),
-                            child: ListTile(
-                              // leading: CircleAvatar(
-                              //   backgroundImage: NetworkImage(item.stateName),
-                              // ),
-                              selected: isSelected,
-                              title: Text(item.districtName.toString()),
-                              subtitle: Text(item.districtId.toString()),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.remove,
+                                      color: Colors.grey[600],
+                                    ),
+                                    Text("District",
+                                        style: formElementsHeaderTextStyle),
+                                    SizedBox(height: 10),
+                                    Expanded(
+                                      child: ListView.builder(
+                                        controller: controller,
+                                        physics: BouncingScrollPhysics(),
+                                        itemCount: districts!.length,
+                                        itemBuilder: (_, index) {
+                                          return ListTile(
+                                            title: Text(districts!
+                                                    .elementAt(index)
+                                                    .districtName ??
+                                                ""),
+                                            onTap: () async {
+                                              setState(() {
+                                                district =
+                                                    districts!.elementAt(index);
+                                                widget.platformChannelProvider!
+                                                        .setDistrictCodeProv =
+                                                    district!.districtId!;
+                                                widget.platformChannelProvider!
+                                                        .setDistNameProv =
+                                                    district!.districtName!;
+                                                print(district!.districtId
+                                                        .toString() +
+                                                    " " +
+                                                    district!.districtName
+                                                        .toString());
+                                              });
+                                              Navigator.pop(context);
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 30),
+                      child:
+                          Text("District", style: formElementsHeaderTextStyle)),
+                  Container(
+                    margin: EdgeInsets.only(
+                        left: 20, right: 15, top: 15, bottom: 15),
+                    height: 50,
+                    width: district == null ? 50 : 150,
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15.0)),
+                    child: Center(
+                      child: district == null
+                          ? Icon(Icons.arrow_forward_ios)
+                          : Text(
+                              district == null
+                                  ? "Select"
+                                  : district!.districtName!,
                             ),
-                          );
-                        },
-                        onChange: (selected) {
-                          setState(() {
-                            district = selected;
-                            widget.platformChannelProvider!
-                                .setDistrictCodeProv = district!.districtId!;
-                            widget.platformChannelProvider!.setDistNameProv =
-                                district!.districtName!;
-                            print(district!.districtId.toString() +
-                                " " +
-                                district!.districtName.toString());
-                          });
-                        },
-                      );
-                    },
+                      // Marquee(
+                      //         text: district == null
+                      //             ? "Select"
+                      //             : district!.districtName!,
+                      //         fadingEdgeStartFraction: 0.2,
+                      //         showFadingOnlyWhenScrolling: true,
+                      //         fadingEdgeEndFraction: 0.2,
+                      //         velocity: 25.0,
+                      //         blankSpace: 50.0,
+                      //       ),
+                    ),
                   ),
                 ],
               ),
-          ],
-        ),
+            ),
+          SizedBox(height: state != null ? 20 : 10)
+        ],
       ),
     );
   }
 }
 
-class EnterPinCode extends StatelessWidget {
+class EnterPinCode extends StatefulWidget {
   final PlatformChannelProvider? platformChannelProvider;
+  final BuildContext context;
   const EnterPinCode({
     Key? key,
     this.platformChannelProvider,
+    required this.context,
   }) : super(key: key);
 
   static Color clayColor = Color(0xFFF2F2F2);
   static TextStyle formElementsHeaderTextStyle =
-      TextStyle(fontSize: 17, color: Colors.black.withOpacity(0.7));
+      TextStyle(fontSize: 19, fontWeight: FontWeight.bold);
+
+  @override
+  _EnterPinCodeState createState() => _EnterPinCodeState();
+}
+
+class _EnterPinCodeState extends State<EnterPinCode> {
+  TextEditingController _pincodeController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text("PIN Code", style: formElementsHeaderTextStyle),
-        SizedBox(height: 20),
+        Text("Enter PIN Code",
+            style: EnterPinCode.formElementsHeaderTextStyle
+                .copyWith(color: Theme.of(context).primaryColor)),
+        SizedBox(height: 10),
         Container(
-          padding: EdgeInsets.symmetric(
-              horizontal: MediaQuery.of(context).size.width * 0.3),
-          child: ClayContainer(
-            color: clayColor,
-            borderRadius: 40.0,
-            emboss: true,
-            height: 50,
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.only(),
-                // left: 15, right: 15
-                child: TextFormField(
-                  decoration: InputDecoration(
-                      hintStyle:
-                          TextStyle(color: Colors.black.withOpacity(0.35)),
-                      hintText: "######",
-                      counter: Offstage(),
-                      border: InputBorder.none),
-                  keyboardType: TextInputType.number,
-                  maxLength: 6,
-                  style: TextStyle(fontSize: 25),
-                  textAlign: TextAlign.center,
-                  maxLengthEnforcement:
-                      MaxLengthEnforcement.truncateAfterCompositionEnds,
-                  onChanged: (String? input) {
-                    if (input!.length == 6) {
-                      //TODO: Check Valid number or not
-                      platformChannelProvider!.setPincodeProv =
-                          int.parse(input);
-                    }
-                  },
-                ),
-              ),
+          width: MediaQuery.of(context).size.width * 0.35,
+          padding: EdgeInsets.only(top: 10),
+          decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withOpacity(0.8),
+              borderRadius: BorderRadius.circular(40.0)),
+          child: Center(
+            child: TextFormField(
+              controller: _pincodeController,
+              decoration: InputDecoration(
+                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+                  hintText: "######",
+                  counter: Offstage(),
+                  counterStyle: TextStyle(fontSize: 0),
+                  border: InputBorder.none),
+              keyboardType: TextInputType.number,
+              maxLength: 6,
+              // buildCounter: null,
+              scrollPhysics: BouncingScrollPhysics(),
+              style: TextStyle(
+                  fontSize: 22,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold),
+              inputFormatters: [LengthLimitingTextInputFormatter(6)],
+              textAlign: TextAlign.center,
+              cursorColor: Colors.white,
+              maxLengthEnforcement:
+                  MaxLengthEnforcement.truncateAfterCompositionEnds,
+              onChanged: (String? input) {
+                if (input!.length == 6) {
+                  //TODO: Check Valid number or not
+                  widget.platformChannelProvider!.setPincodeProv =
+                      int.parse(input);
+                  FocusScopeNode currentFocus = FocusScope.of(context);
+                  if (!currentFocus.hasPrimaryFocus) {
+                    currentFocus.unfocus();
+                  }
+                }
+              },
             ),
           ),
         ),

@@ -70,7 +70,7 @@ class _ServiceAlreadyRunningPageState extends State<ServiceAlreadyRunningPage>
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.detached) {
-      await platformChannelProvider!.onDestroy();
+      // await platformChannelProvider!.onDestroy();
     }
   }
 

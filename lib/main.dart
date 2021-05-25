@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
-          primaryColor: Colors.blue,
+          primaryColor: Color(0xFF742C63),
           accentColor: Colors.blueGrey,
           bottomSheetTheme:
               BottomSheetThemeData(backgroundColor: Colors.black54),
