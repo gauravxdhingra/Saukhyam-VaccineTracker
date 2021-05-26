@@ -7,7 +7,6 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.graphics.Color
 import android.net.ConnectivityManager
 import android.os.Build
 import android.os.IBinder
@@ -15,12 +14,12 @@ import android.util.Log
 import android.webkit.WebSettings
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
-import com.example.cowintrackerindia.R
-import com.example.cowintrackerindia.api.API
-import com.example.cowintrackerindia.constants.Constants
-import com.example.cowintrackerindia.model.Center
-import com.example.cowintrackerindia.model.Model
-import com.example.cowintrackerindia.model.Session
+import com.android.saukhyam.R
+import com.android.saukhyam.api.API
+import com.android.saukhyam.constants.Constants
+import com.android.saukhyam.model.Center
+import com.android.saukhyam.model.Model
+import com.android.saukhyam.model.Session
 import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
@@ -208,7 +207,7 @@ class MyService : Service() {
         val simpleNotification = NotificationCompat.Builder(this, "100")
             .setContentTitle(title)
             .setContentText(details)
-            .setSmallIcon(R.drawable.launch_background)
+            .setSmallIcon(R.drawable.ic_launcher_transparent)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .build()
 
@@ -328,7 +327,7 @@ class MyService : Service() {
             .setOngoing(true)
             .setContentTitle("Vaccine Alert Set")
             .setContentText("We will notify you as soon as vaccines are available!")
-            .setSmallIcon(R.drawable.launch_background)
+            .setSmallIcon(R.drawable.ic_launcher_transparent)
             .build()
     }
 

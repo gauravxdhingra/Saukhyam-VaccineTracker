@@ -1,8 +1,10 @@
 import 'package:cowintrackerindia/provider/platform_channel_provider.dart';
-import 'package:cowintrackerindia/ui/input_details.dart';
 import 'package:cowintrackerindia/ui/service_running.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import 'battery_optimization_permission.dart';
+import 'input_details.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -12,35 +14,53 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  bool _init = false;
   PlatformChannelProvider? platformChannelProvider;
 
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
-    platformChannelProvider = Provider.of<PlatformChannelProvider>(context);
-    bool isServiceAlreadyRunning =
-        await platformChannelProvider!.getServiceRunning();
-    // platformChannelProvider!.dispose();
-    if (isServiceAlreadyRunning) {
-      Future.delayed(Duration(milliseconds: 700)).then((value) =>
+    if (!_init) {
+      _init = true;
+      platformChannelProvider = Provider.of<PlatformChannelProvider>(context);
+      bool isServiceAlreadyRunning =
+          await platformChannelProvider!.getServiceRunning();
+
+      bool isIgnoringBatteryOptimizations =
+          await platformChannelProvider!.isIgnoringBatteryOptimizations();
+
+      bool? batteryOptimizationsIgnoredUser =
+          await platformChannelProvider!.getBatteryOptimization();
+      // True: battery Optimization: off, False: Battery Optimization: on
+
+      if (batteryOptimizationsIgnoredUser == null)
+        batteryOptimizationsIgnoredUser = true;
+
+      if (isIgnoringBatteryOptimizations || !batteryOptimizationsIgnoredUser) {
+        if (isServiceAlreadyRunning) {
+          await Future.delayed(Duration(milliseconds: 700));
           Navigator.pushReplacementNamed(
-              context, ServiceAlreadyRunningPage.routeName));
-    } else {
-      Future.delayed(Duration(milliseconds: 700)).then((value) =>
-          Navigator.pushReplacementNamed(context, InputDetails.routeName));
+              context, ServiceAlreadyRunningPage.routeName);
+        } else {
+          Future.delayed(Duration(milliseconds: 700));
+          Navigator.pushReplacementNamed(context, InputDetails.routeName);
+        }
+      } else {
+        await Future.delayed(Duration(milliseconds: 700));
+        Navigator.pushReplacementNamed(
+            context, BatteryOptimizationPermissionPage.routeName);
+      }
+      setState(() {});
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white,
       body: Center(
-        child: Text(
-          "CoWIN Notifier",
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
+          child:
+              Image.asset('assets/images/logo.png', width: 150, height: 150)),
     );
   }
 }

@@ -252,7 +252,7 @@ class MainActivity: FlutterActivity() {
         }
     }
 
-    fun isIgnoringBatteryOptimizations(context: Context): Boolean {
+    private fun isIgnoringBatteryOptimizations(context: Context): Boolean {
         val powerManager = context.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
         val name = context.applicationContext.packageName
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

@@ -2,6 +2,7 @@ import 'package:cowintrackerindia/provider/platform_channel_provider.dart';
 import 'package:cowintrackerindia/ui/input_details.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share/share.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'floating_modal.dart';
@@ -92,21 +93,15 @@ class _ServiceAlreadyRunningPageState extends State<ServiceAlreadyRunningPage>
       backgroundColor: Color(0xffFCFDFC),
       body: Stack(
         children: [
-          Center(
+          SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Image.asset("assets/images/notification_animation.gif",
-                    fit: BoxFit.fitWidth),
-                // Padding(
-                //   padding: const EdgeInsets.only(left: 25, right: 25, top: 15),
-                //   child: Text(
-                //       pincode == 000000
-                //           ? 'Alert set for ${cost == 0 ? "" : cost == 1 ? "Free " : "Paid "}${vaccine == "ANY" ? "COVID Vaccine" : vaccine} in $dist, $state${dose == 0 ? " " : dose == 1 ? " for First Dose " : " for Second Dose "}${age == 0 ? " " : age == 1 ? " for Ages 18-45 Years" : " for Ages 45+ Years"}'
-                //           : 'Alert set for ${cost == 0 ? "" : cost == 1 ? "Free " : "Paid "}${vaccine == "ANY" ? "COVID Vaccine" : vaccine} for your Pin Code $pincode${dose == 0 ? " " : dose == 1 ? " for First Dose " : " for Second Dose "}${age == 0 ? " " : age == 1 ? " for Ages 18-45 Years " : " for Ages 45+ Years"}',
-                //       textAlign: TextAlign.center,
-                //       style: _textStyle),
-                // ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 100),
+                  child: Image.asset("assets/images/notification_animation.gif",
+                      fit: BoxFit.fitWidth),
+                ),
                 Padding(
                     padding:
                         const EdgeInsets.only(left: 25, right: 25, top: 15),
@@ -115,7 +110,7 @@ class _ServiceAlreadyRunningPageState extends State<ServiceAlreadyRunningPage>
                         style: _textStyle.copyWith(fontSize: 18),
                         textAlign: TextAlign.center)),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 30),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -150,51 +145,82 @@ class _ServiceAlreadyRunningPageState extends State<ServiceAlreadyRunningPage>
                     ],
                   ),
                 ),
+                SizedBox(height: 20),
+                InkWell(
+                  onTap: () {
+                    Share.share(
+                        'Never miss a Vaccine Slot again!\nDownload Saukhyam App https://github.com/gauravxdhingra/Saukhyam-VaccineTracker/releases/tag/v1.0 and get Instant updates on Vaccine Availability.\nAyur Arogya Saukhyam 🙏\n#IndiaFightsCorona');
+                  },
+                  child: Container(
+                      height: 100,
+                      width: MediaQuery.of(context).size.width,
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Image.asset('assets/images/covid-family.png',
+                              fit: BoxFit.cover),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 10.0),
+                            child: Text("Share with your\nFriends and Family",
+                                style: TextStyle(
+                                    color: Theme.of(context).primaryColor,
+                                    fontSize: 20),
+                                overflow: TextOverflow.ellipsis),
+                          ),
+                        ],
+                      )),
+                )
               ],
             ),
           ),
           Align(
               alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 10, horizontal: 40),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text("An Initiative By ", style: _textStyle),
-                    Row(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 40),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        InkWell(
-                          child: Text("Gaurav Dhingra",
-                              style: _textStyle.copyWith(
-                                  color: Theme.of(context).primaryColor,
-                                  fontWeight: FontWeight.bold)),
-                          onTap: () async {
-                            await canLaunch(
-                                    "https://www.linkedin.com/in/gauravxdhingra/")
-                                ? await launch(
-                                    "https://www.linkedin.com/in/gauravxdhingra/")
-                                : print("Can't Launch!");
-                          },
-                        ),
-                        Text(" and ", style: _textStyle),
-                        InkWell(
-                          child: Text("Rahul Jain",
-                              style: _textStyle.copyWith(
-                                  color: Theme.of(context).primaryColor,
-                                  fontWeight: FontWeight.bold)),
-                          onTap: () async {
-                            await canLaunch("https://bit.ly/mRahulJain")
-                                ? await launch("https://bit.ly/mRahulJain")
-                                : print("Can't Launch!");
-                          },
+                        Text("An Initiative By ", style: _textStyle),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            InkWell(
+                              child: Text("Gaurav Dhingra",
+                                  style: _textStyle.copyWith(
+                                      color: Theme.of(context).primaryColor,
+                                      fontWeight: FontWeight.bold)),
+                              onTap: () async {
+                                await canLaunch(
+                                        "https://www.linkedin.com/in/gauravxdhingra/")
+                                    ? await launch(
+                                        "https://www.linkedin.com/in/gauravxdhingra/")
+                                    : print("Can't Launch!");
+                              },
+                            ),
+                            Text(" and ", style: _textStyle),
+                            InkWell(
+                              child: Text("Rahul Jain",
+                                  style: _textStyle.copyWith(
+                                      color: Theme.of(context).primaryColor,
+                                      fontWeight: FontWeight.bold)),
+                              onTap: () async {
+                                await canLaunch("https://bit.ly/mRahulJain")
+                                    ? await launch("https://bit.ly/mRahulJain")
+                                    : print("Can't Launch!");
+                              },
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               )),
         ],
       ),
@@ -204,66 +230,71 @@ class _ServiceAlreadyRunningPageState extends State<ServiceAlreadyRunningPage>
   showMoreBottomSheet() async {
     await showFloatingModalBottomSheet(
       context: context,
-      builder: (context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(height: 40),
-          Text("More Details",
-              style: TextStyle(
-                  color: Theme.of(context).primaryColor,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold)),
-          SizedBox(height: 20),
-          Table(
-            children: [
-              TableRow(children: [
-                Text("Vaccine", textAlign: TextAlign.center),
-                Text(vaccine ?? "Any", textAlign: TextAlign.center)
-              ]),
-              if (pincode == 000000)
+      builder: (context) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 40),
+            Text("More Details",
+                style: TextStyle(
+                    color: Theme.of(context).primaryColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold)),
+            SizedBox(height: 20),
+            Table(
+              children: [
                 TableRow(children: [
-                  Text("District/State", textAlign: TextAlign.center),
-                  Text(dist! + ", " + state!, textAlign: TextAlign.center)
+                  Text("Vaccine", textAlign: TextAlign.center),
+                  Text(vaccine ?? "Any",
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis)
                 ]),
-              if (pincode != 000000)
+                if (pincode == 000000)
+                  TableRow(children: [
+                    Text("District/State", textAlign: TextAlign.center),
+                    Text(dist! + ", " + state!, textAlign: TextAlign.center)
+                  ]),
+                if (pincode != 000000)
+                  TableRow(children: [
+                    Text("Pin Code", textAlign: TextAlign.center),
+                    Text(pincode.toString(), textAlign: TextAlign.center)
+                  ]),
                 TableRow(children: [
-                  Text("Pin Code", textAlign: TextAlign.center),
-                  Text(pincode.toString(), textAlign: TextAlign.center)
+                  Text("Age", textAlign: TextAlign.center),
+                  Text(
+                      age == 0
+                          ? "Any"
+                          : age == 1
+                              ? "18-45 Years"
+                              : "45+ Years",
+                      textAlign: TextAlign.center)
                 ]),
-              TableRow(children: [
-                Text("Age", textAlign: TextAlign.center),
-                Text(
-                    age == 0
-                        ? "Any"
-                        : age == 1
-                            ? "18-45 Years"
-                            : "45+ Years",
-                    textAlign: TextAlign.center)
-              ]),
-              TableRow(children: [
-                Text("Dose", textAlign: TextAlign.center),
-                Text(
-                    age == 0
-                        ? "Any"
-                        : dose == 1
-                            ? "First Dose"
-                            : "Second Dose",
-                    textAlign: TextAlign.center)
-              ]),
-              TableRow(children: [
-                Text("Cost", textAlign: TextAlign.center),
-                Text(
-                    cost == 0
-                        ? "Any"
-                        : cost == 1
-                            ? "Free"
-                            : "Paid",
-                    textAlign: TextAlign.center)
-              ]),
-            ],
-          ),
-          SizedBox(height: 30),
-        ],
+                TableRow(children: [
+                  Text("Dose", textAlign: TextAlign.center),
+                  Text(
+                      dose == 0
+                          ? "Any"
+                          : dose == 1
+                              ? "First Dose"
+                              : "Second Dose",
+                      textAlign: TextAlign.center)
+                ]),
+                TableRow(children: [
+                  Text("Cost", textAlign: TextAlign.center),
+                  Text(
+                      cost == 0
+                          ? "Any"
+                          : cost == 1
+                              ? "Free"
+                              : "Paid",
+                      textAlign: TextAlign.center)
+                ]),
+              ],
+            ),
+            SizedBox(height: 30),
+          ],
+        ),
       ),
     );
   }

@@ -11,13 +11,26 @@ class PlatformChannelProvider with ChangeNotifier {
   String? _distNameProv;
   String? _stateNameProv;
 
-  Future<void> getBatteryLevel() async {
+  Future<bool> isConnected() async {
+    bool result = false;
     try {
-      final int result = await platform.invokeMethod('getBatteryLevel');
+      result = await platform.invokeMethod('isConnected');
+      print("Connected");
+    } on PlatformException catch (e) {
+      print(e.message);
+    }
+    return result;
+  }
+
+  Future<bool> isIgnoringBatteryOptimizations() async {
+    bool result = false;
+    try {
+      result = await platform.invokeMethod('isIgnoringBatteryOptimizations');
       print(result);
     } on PlatformException catch (e) {
       print(e.message);
     }
+    return result;
   }
 
   Future<void> registerWithPinCode(
@@ -72,7 +85,7 @@ class PlatformChannelProvider with ChangeNotifier {
       await setServiceRunning(true);
       await setAge(age);
       await setDistCode(getDistrictCodeProv!);
-      await setDistName(getStateNameProv!);
+      await setDistName(getDistNameProv!);
       await setPincode(000000);
       await setStateCode(0);
       await setStateName(getStateNameProv!);
@@ -263,6 +276,18 @@ class PlatformChannelProvider with ChangeNotifier {
     return cost;
   }
 
+  setBatteryOptimization(bool val) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    preferences.setBool("batteryOptimization", val);
+  }
+
+  Future<bool?> getBatteryOptimization() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    bool val = preferences.getBool('batteryOptimization') ?? true;
+    return val;
+  }
+  // True: battery Optimization: off, False: Battery Optimization: on
+
   // *******************************SHARED PREFERENCES****************************************
   // *******************************SHARED PREFERENCES****************************************
   // *******************************SHARED PREFERENCES****************************************
@@ -270,7 +295,7 @@ class PlatformChannelProvider with ChangeNotifier {
   int? get getPincodeProv => _pincodeProv;
   int? get getDistrictCodeProv => _districtCodeProv;
 
-  set setPincodeProv(int value) {
+  set setPincodeProv(int? value) {
     _pincodeProv = value;
     notifyListeners();
   }

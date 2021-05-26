@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:cowintrackerindia/models/districts/districts.dart';
 import 'package:cowintrackerindia/models/states/state.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 class ApiProvider with ChangeNotifier {
   Dio dio = new Dio();
@@ -9,28 +12,22 @@ class ApiProvider with ChangeNotifier {
 
   bool _loading = true;
 
-  // Future<VaccineData> getVaccineCalender() async {
-  //   // TODO: Shared Prefs
-  //   // String pincode = await getPincode();
-  //   // String stateCode = await getStateCode();
-  //   // String distCode = await getDistCode();
-  //   String pincode = "";
-  //
-  //   Response x = await dio.get(
-  //     baseUrl + "/v2/appointment/sessions/public/calendarByPin",
-  //     queryParameters: {
-  //       "pincode": pincode == "" ? "125001" : pincode,
-  //       "date": DateFormat('dd-MM-yyyy').format(DateTime.now())
-  //     },
-  //     options: Options(
-  //       headers: {"accept": "application/json", "Accept-Language": "hi_IN"},
-  //     ),
-  //   );
-  //   // print(x.data);
-  //   VaccineData vdata = VaccineData.fromJson(x.data);
-  //   print(vdata.centers);
-  //   return vdata;
-  // }
+  userEntry() async {
+    String dateTime = DateTime.now().toIso8601String();
+    var uuid = Uuid();
+    Map<String, String> _data = {uuid.v4(): dateTime.toString()};
+    print(_data);
+    try {
+      dio.patch(
+          "https://saukhyam-4a955-default-rtdb.asia-southeast1.firebasedatabase.app/users.json",
+          options: Options(
+            headers: {'Content-Type': 'application/json'},
+          ),
+          data: jsonEncode(_data));
+    } catch (e) {
+      print(e.toString());
+    }
+  }
 
   Future<StatesList> getStates() async {
     Response x = await dio.get(

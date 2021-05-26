@@ -1,6 +1,6 @@
 package com.android.saukhyam.api
 
-import com.example.cowintrackerindia.model.Model
+import com.android.saukhyam.model.Model
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query

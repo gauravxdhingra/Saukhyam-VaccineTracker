@@ -23,27 +23,32 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  clay_containers: ^0.3.2
   cupertino_icons: ^1.0.2
   dio: ^4.0.0
-  flutter_neumorphic: ^3.1.0
   flutter_toggle_tab: ^1.1.1
   font_awesome_flutter: ^9.0.0
+  http: ^0.13.3
   intl: ^0.17.0
   loading_indicator: ^2.1.1
-  marquee: ^2.1.0
   modal_bottom_sheet: ^2.0.0
   open_settings: ^2.0.1
   provider: ^5.0.0
-  rolling_switch: ^0.0.2
   select_dialog: ^2.0.0
+  share: ^2.0.2
   shared_preferences: ^2.0.5
-  toggle_switch: ^0.1.9
   url_launcher: ^6.0.4
+  uuid: ^3.0.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  change_app_package_name: ^1.0.0
+  flutter_launcher_icons: ^0.9.0
+
+flutter_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/images/logo.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.cowintrackerindia">
+    package="com.android.saukhyam">
     <!-- Flutter needs it to communicate with the running application
          to allow setting breakpoints, to provide hot reload, etc.
     -->
@@ -9,7 +9,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
-        android:label="cowintrackerindia"
+        android:label="Saukhyam"
         android:icon="@mipmap/ic_launcher">
 
         <activity

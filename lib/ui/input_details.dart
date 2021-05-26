@@ -6,11 +6,12 @@ import 'package:cowintrackerindia/ui/service_running.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_neumorphic/flutter_neumorphic.dart';
+// import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:flutter_toggle_tab/flutter_toggle_tab.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:loading_indicator/loading_indicator.dart';
-import 'package:open_settings/open_settings.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'floating_modal.dart';
 
@@ -25,6 +26,7 @@ class InputDetails extends StatefulWidget {
 
 class _InputDetailsState extends State<InputDetails> {
   bool _init = false;
+  bool _isConnected = false;
   LocationMode _locationMode = LocationMode.ByPIN;
 
   ApiProvider? apiProvider;
@@ -54,32 +56,49 @@ class _InputDetailsState extends State<InputDetails> {
   TextStyle? labelTextStyle;
 
   @override
-  void didChangeDependencies() async {
-    if (!_init) {
-      labelTextStyle = TextStyle(
-          fontWeight: FontWeight.w400,
-          fontSize: 16,
-          color: Theme.of(context).primaryColor);
-      formElementsHeaderTextStyle = TextStyle(
-          fontSize: 19,
-          color: Theme.of(context).primaryColor,
-          fontWeight: FontWeight.bold);
-      modalSheetHeader = TextStyle(
-          fontSize: 22,
-          color: Theme.of(context).primaryColor,
-          fontWeight: FontWeight.bold);
+  void initState() {
+    print("************");
+    super.initState();
+  }
 
+  @override
+  void didChangeDependencies() async {
+    super.didChangeDependencies();
+    if (!_init) {
+      _init = true;
+      initializeStyles();
       platformChannelProvider = Provider.of<PlatformChannelProvider>(context);
       apiProvider = Provider.of<ApiProvider>(context);
+
+      _isConnected = await platformChannelProvider!.isConnected();
+      if (!_isConnected) showNotConnectedDialog();
+
       StatesList statesData = await apiProvider!.getStates();
       states = statesData.states;
+      bool notFirstLaunch = await platformChannelProvider!.getVisitingFlag();
 
-      setState(() {
-        _init = true;
-        apiProvider!.setLoading = false;
-      });
-      super.didChangeDependencies();
+      if (!notFirstLaunch) {
+        await apiProvider!.userEntry();
+        await platformChannelProvider!.setVisitingFlag();
+      }
+      apiProvider!.setLoading = false;
+      setState(() {});
     }
+  }
+
+  initializeStyles() {
+    labelTextStyle = TextStyle(
+        fontWeight: FontWeight.w400,
+        fontSize: 16,
+        color: Theme.of(context).primaryColor);
+    formElementsHeaderTextStyle = TextStyle(
+        fontSize: 19,
+        color: Theme.of(context).primaryColor,
+        fontWeight: FontWeight.bold);
+    modalSheetHeader = TextStyle(
+        fontSize: 22,
+        color: Theme.of(context).primaryColor,
+        fontWeight: FontWeight.bold);
   }
 
   Future<List<District>?> getDistrictsFromStateId(int stateId) async {
@@ -89,40 +108,24 @@ class _InputDetailsState extends State<InputDetails> {
 
   void handleAppbarActionPopupClick(String value) {
     switch (value) {
-      case 'Battery Optimization Settings':
-        OpenSettings.openIgnoreBatteryOptimizationSetting();
-        break;
+      // case 'Battery Optimization Settings':
+      //   OpenSettings.openIgnoreBatteryOptimizationSetting();
+      //   break;
       case 'About':
-        showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-                  title: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("CoWIN Notifier",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                              color: Theme.of(context).primaryColor)),
-                      Text("v1.0",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              color: Theme.of(context).primaryColor)),
-                    ],
-                  ),
-                  content: Container(),
-                ));
+        showAboutDialog();
         break;
     }
   }
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        key: _scaffoldKey,
         appBar: AppBar(
-          title: Text("CoWIN Notifier",
+          title: Text("Saukhyam",
               style: TextStyle(color: Theme.of(context).primaryColor)),
           backgroundColor: apiProvider!.getLoading
               ? Theme.of(context).primaryColor.withOpacity(0.4)
@@ -130,20 +133,15 @@ class _InputDetailsState extends State<InputDetails> {
           elevation: 0,
           centerTitle: true,
           actions: [
-            // GestureDetector(
-            //     onTap: () async {
-            //       OpenSettings.openIgnoreBatteryOptimizationSetting();
-            //       // await platformChannelProvider!.deleteAlerts();
-            //     },
-            //     child: Icon(Icons.more_vert,
-            //         color: Theme.of(context).primaryColor)),
             PopupMenuButton<String>(
               onSelected: handleAppbarActionPopupClick,
               icon:
                   Icon(Icons.more_vert, color: Theme.of(context).primaryColor),
               itemBuilder: (BuildContext context) {
-                return {'Battery Optimization Settings', 'About'}
-                    .map((String choice) {
+                return {
+                  // 'Battery Optimization Settings',
+                  'About'
+                }.map((String choice) {
                   return PopupMenuItem<String>(
                     value: choice,
                     child: Text(choice),
@@ -207,10 +205,9 @@ class _InputDetailsState extends State<InputDetails> {
                     children: [
                       SizedBox(height: 15),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 30),
-                        child:
-                            Text("Vaccine", style: formElementsHeaderTextStyle),
-                      ),
+                          padding: const EdgeInsets.symmetric(horizontal: 30),
+                          child: Text("Vaccine",
+                              style: formElementsHeaderTextStyle)),
                       SizedBox(height: 20),
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
@@ -328,10 +325,13 @@ class _InputDetailsState extends State<InputDetails> {
                                         platformChannelProvider!.getPincodeProv
                                   });
                             } else {
-                              //  TODO: SnackBar: Enter a valid pincode
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text("Enter a valid Pin Code")));
                             }
                           } else {
-                            //  TODO: SnackBar: Enter a pincode
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text("Enter A Valid Pin Code")));
                           }
                         } else if (_locationMode == LocationMode.ByDistrict) {
                           if (platformChannelProvider!.getDistrictCodeProv !=
@@ -355,12 +355,15 @@ class _InputDetailsState extends State<InputDetails> {
                                       platformChannelProvider!.getStateNameProv,
                                   "pincode": 000000
                                 });
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text("Select State and District")));
                           }
                         }
                       },
                     ),
                   ),
-                  SizedBox(height: 100),
+                  SizedBox(height: 50),
                 ],
               ),
             ),
@@ -374,9 +377,8 @@ class _InputDetailsState extends State<InputDetails> {
                     width: 100,
                     height: 100,
                     child: LoadingIndicator(
-                      indicatorType: Indicator.ballScaleMultiple,
-                      color: Theme.of(context).primaryColor,
-                    ),
+                        indicatorType: Indicator.ballScaleMultiple,
+                        color: Theme.of(context).primaryColor),
                   ),
                 ),
               ),
@@ -430,7 +432,7 @@ class _InputDetailsState extends State<InputDetails> {
         onTap: () => onPress(),
         child: Container(
           height: 110,
-          width: 80,
+          width: 110,
           margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -438,10 +440,9 @@ class _InputDetailsState extends State<InputDetails> {
             children: [
               SizedBox(height: 1),
               ClipRRect(
-                borderRadius: BorderRadius.circular(15.0),
-                child: Image.asset("assets/images/" + assetURL,
-                    height: 60, fit: BoxFit.fitHeight),
-              ),
+                  borderRadius: BorderRadius.circular(15.0),
+                  child: Image.asset("assets/images/" + assetURL,
+                      height: 60, fit: BoxFit.fitHeight)),
               SizedBox(height: 10),
               Text(vaccineName, style: labelTextStyle),
               SizedBox(height: 0),
@@ -461,9 +462,7 @@ class _InputDetailsState extends State<InputDetails> {
         builder: (BuildContext context, StateSetter setModalState) => Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(height: 40),
-            Text("More", style: modalSheetHeader),
-            SizedBox(height: 20),
+            SizedBox(height: 50),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -486,9 +485,8 @@ class _InputDetailsState extends State<InputDetails> {
                 ),
                 SizedBox(height: 30),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
-                  child: Text("Cost", style: formElementsHeaderTextStyle),
-                ),
+                    padding: const EdgeInsets.symmetric(horizontal: 30),
+                    child: Text("Cost", style: formElementsHeaderTextStyle)),
                 SingleChildScrollView(
                   physics: BouncingScrollPhysics(),
                   scrollDirection: Axis.horizontal,
@@ -506,17 +504,15 @@ class _InputDetailsState extends State<InputDetails> {
             ),
             SizedBox(height: 30),
             Container(
-              // height: 60,
-              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 0),
-              decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
-                  borderRadius: BorderRadius.all(Radius.circular(30.0))),
-              child: TextButton(
-                child: Text("Done",
-                    style: TextStyle(color: Colors.white, fontSize: 18)),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
+                // height: 60,
+                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 0),
+                decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
+                    borderRadius: BorderRadius.all(Radius.circular(30.0))),
+                child: TextButton(
+                    child: Text("Done",
+                        style: TextStyle(color: Colors.white, fontSize: 18)),
+                    onPressed: () => Navigator.pop(context))),
             SizedBox(height: 30),
           ],
         ),
@@ -526,6 +522,128 @@ class _InputDetailsState extends State<InputDetails> {
       iCost = iBSCost;
       iDose = iBSDose;
     });
+  }
+
+  showNotConnectedDialog() {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.0)),
+              title: Text("No Internet Connection!"),
+              content:
+                  Text("Please Check Your Internet Connection and Try Again"),
+              actions: [
+                TextButton(
+                    onPressed: () => SystemChannels.platform
+                        .invokeMethod('SystemNavigator.pop'),
+                    child: Text("OK"))
+              ],
+            ));
+  }
+
+  showAboutDialog() {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.0)),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                          child: Image.asset('assets/images/logo.png')),
+                      SizedBox(width: 5),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Saukhyam",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                  color: Theme.of(context).primaryColor)),
+                          Text("v1.0",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: Theme.of(context).primaryColor)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                      'Saukhyam originates from a Sanskrit phrase, "Ayur Arogya Saukhyam" which says, "Live Long with Good Health and Happiness"'),
+                  SizedBox(height: 5),
+                  ListTile(
+                    leading: Icon(FontAwesomeIcons.github),
+                    title: Text("View on GitHub", textAlign: TextAlign.center),
+                    trailing: SizedBox(width: 1),
+                    onTap: () async {
+                      await canLaunch(
+                              "https://github.com/gauravxdhingra/Saukhyam-VaccineTracker/releases/tag/v1.0")
+                          ? await launch(
+                              "https://github.com/gauravxdhingra/Saukhyam-VaccineTracker/releases/tag/v1.0")
+                          : print("Can't Launch!");
+                    },
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0)),
+                  ),
+                  SizedBox(height: 10),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text("An Initiative By "),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          InkWell(
+                            child: Text("Gaurav Dhingra",
+                                style: TextStyle(
+                                    color: Theme.of(context).primaryColor,
+                                    fontWeight: FontWeight.bold)),
+                            onTap: () async {
+                              await canLaunch(
+                                      "https://www.linkedin.com/in/gauravxdhingra/")
+                                  ? await launch(
+                                      "https://www.linkedin.com/in/gauravxdhingra/")
+                                  : print("Can't Launch!");
+                            },
+                          ),
+                          Text(" and "),
+                          InkWell(
+                            child: Text("Rahul Jain",
+                                style: TextStyle(
+                                    color: Theme.of(context).primaryColor,
+                                    fontWeight: FontWeight.bold)),
+                            onTap: () async {
+                              await canLaunch("https://bit.ly/mRahulJain")
+                                  ? await launch("https://bit.ly/mRahulJain")
+                                  : print("Can't Launch!");
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  child: Text("Ok"),
+                  onPressed: () => Navigator.pop(context),
+                )
+              ],
+            ));
   }
 }
 
@@ -870,14 +988,25 @@ class _EnterPinCodeState extends State<EnterPinCode> {
               maxLengthEnforcement:
                   MaxLengthEnforcement.truncateAfterCompositionEnds,
               onChanged: (String? input) {
-                if (input!.length == 6) {
+                if (input == null)
+                  widget.platformChannelProvider!.setPincodeProv = null;
+                if (input!.length == 0) {
+                  widget.platformChannelProvider!.setPincodeProv = null;
+                }
+                if (input.length == 6) {
                   //TODO: Check Valid number or not
-                  widget.platformChannelProvider!.setPincodeProv =
-                      int.parse(input);
-                  FocusScopeNode currentFocus = FocusScope.of(context);
-                  if (!currentFocus.hasPrimaryFocus) {
-                    currentFocus.unfocus();
-                  }
+                  int? parsedInput = int.tryParse(input);
+
+                  widget.platformChannelProvider!.setPincodeProv = parsedInput;
+
+                  if (parsedInput != null) {
+                    if (parsedInput > 110000 && parsedInput < 999999) {
+                      FocusScopeNode currentFocus = FocusScope.of(context);
+                      if (!currentFocus.hasPrimaryFocus) {
+                        currentFocus.unfocus();
+                      }
+                    }
+                  } else {}
                 }
               },
             ),
