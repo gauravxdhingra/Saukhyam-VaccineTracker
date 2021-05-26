@@ -1,4 +1,4 @@
-package com.example.cowintrackerindia.model
+package com.android.saukhyam.model
 
 import androidx.annotation.Keep
 

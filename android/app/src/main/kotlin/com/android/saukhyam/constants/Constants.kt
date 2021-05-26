@@ -1,4 +1,4 @@
-package com.example.cowintrackerindia.constants
+package com.android.saukhyam.constants
 
 class Constants {
 

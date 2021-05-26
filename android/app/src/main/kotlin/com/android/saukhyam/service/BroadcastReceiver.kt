@@ -1,4 +1,4 @@
-package com.example.cowintrackerindia.service
+package com.android.saukhyam.service
 
 import android.content.BroadcastReceiver
 import android.content.Context
