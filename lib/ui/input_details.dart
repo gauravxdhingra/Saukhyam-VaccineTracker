@@ -126,7 +126,10 @@ class _InputDetailsState extends State<InputDetails> {
         key: _scaffoldKey,
         appBar: AppBar(
           title: Text("Saukhyam",
-              style: TextStyle(color: Theme.of(context).primaryColor)),
+              style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.bold)
+          ),
           backgroundColor: apiProvider!.getLoading
               ? Theme.of(context).primaryColor.withOpacity(0.4)
               : Theme.of(context).scaffoldBackgroundColor,
@@ -581,11 +584,11 @@ class _InputDetailsState extends State<InputDetails> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                      'Saukhyam originates from a Sanskrit phrase, "Ayur Arogya Saukhyam" which says, "Live Long with Good Health and Happiness"'),
+                      'Saukhyam originates from a Sanskrit phrase, "Ayur Arogya Saukhya" which says, "Live Long with Good Health and Happiness"'),
                   SizedBox(height: 5),
                   ListTile(
                     leading: Icon(FontAwesomeIcons.github),
-                    title: Text("View on GitHub", textAlign: TextAlign.center),
+                    title: Text("View on GitHub", textAlign: TextAlign.left),
                     trailing: SizedBox(width: 1),
                     onTap: () async {
                       await canLaunch(
@@ -599,12 +602,13 @@ class _InputDetailsState extends State<InputDetails> {
                   ),
                   SizedBox(height: 10),
                   Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text("An Initiative By "),
                       Row(
                         mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           InkWell(
                             child: Text("Gaurav Dhingra",

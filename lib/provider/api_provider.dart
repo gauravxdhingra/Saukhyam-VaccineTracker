@@ -15,7 +15,7 @@ class ApiProvider with ChangeNotifier {
   userEntry() async {
     String dateTime = DateTime.now().toIso8601String();
     var uuid = Uuid();
-    Map<String, String> _data = {uuid.v4(): dateTime.toString()};
+    Map<String, String> _data = {dateTime.toString().replaceAll(":", "-").replaceAll(".", "-"): uuid.v4()};
     print(_data);
     try {
       dio.patch(

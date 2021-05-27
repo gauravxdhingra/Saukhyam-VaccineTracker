@@ -127,7 +127,7 @@ class _ServiceAlreadyRunningPageState extends State<ServiceAlreadyRunningPage>
                               Navigator.pushReplacementNamed(
                                   context, InputDetails.routeName);
                             },
-                            child: Text("Delete Alert")),
+                            child: Text("Stop Alert")),
                       ),
                       Container(
                         decoration: BoxDecoration(
@@ -149,12 +149,12 @@ class _ServiceAlreadyRunningPageState extends State<ServiceAlreadyRunningPage>
                 InkWell(
                   onTap: () {
                     Share.share(
-                        'Never miss a Vaccine Slot again!\nDownload Saukhyam App https://github.com/gauravxdhingra/Saukhyam-VaccineTracker/releases/tag/v1.0 and get Instant updates on Vaccine Availability.\nAyur Arogya Saukhyam 🙏\n#IndiaFightsCorona');
+                        'Never miss a Vaccine Slot again!\nDownload Saukhyam App https://github.com/gauravxdhingra/Saukhyam-VaccineTracker/releases/tag/v1.0 and get Instant updates on Vaccine Availability.\nAyur Arogya Saukhya 🙏\n#IndiaFightsCorona');
                   },
                   child: Container(
                       height: 100,
                       width: MediaQuery.of(context).size.width,
-                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [

@@ -1,19 +1,19 @@
 package com.android.saukhyam.service
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.Service
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
+import android.net.Uri
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import android.util.Log
 import android.webkit.WebSettings
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import com.android.saukhyam.MainActivity
 import com.android.saukhyam.R
 import com.android.saukhyam.api.API
 import com.android.saukhyam.constants.Constants
@@ -32,6 +32,7 @@ import java.util.*
 class MyService : Service() {
 
     private lateinit var mSharedPreferences: SharedPreferences
+    private var wakeLock: PowerManager.WakeLock? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -64,10 +65,23 @@ class MyService : Service() {
     private var timerTask: TimerTask? = null
 
     private fun startTimer() {
+
+        wakeLock =
+            (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
+                newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyService::lock").apply {
+                    acquire()
+                }
+            }
+
         timer = Timer()
         timerTask = object : TimerTask() {
             override fun run() {
                 if(toStop) {
+                    wakeLock?.let {
+                        if (it.isHeld) {
+                            it.release()
+                        }
+                    }
                     timerTask = null
                     timer = null
                     return
@@ -76,12 +90,17 @@ class MyService : Service() {
             }
         }
 //        TODO: TIMER -> RELEASE
-        timer!!.schedule(timerTask, 5 * 60 * 1000, 5 * 60 * 1000)
+        timer!!.schedule(timerTask, Constants().TIME, Constants().TIME)
     }
 
     private fun stopTimerTask() {
         if (timer != null) {
             toStop=true
+            wakeLock?.let {
+                if (it.isHeld) {
+                    it.release()
+                }
+            }
             timer!!.cancel()
             timer = null
         }
@@ -138,7 +157,7 @@ class MyService : Service() {
                         }
                         for(session in center.sessions) {
                             if(isPreferred(sharedPreferences, session, center)) {
-                                notifyUser("Vaccines Available!", "Book your slot on CoWIN Portal ASAP!")
+                                notifyUser("Vaccines Available!", "Tap to book your slot on CoWIN Portal ASAP!")
                                 flag = true
                                 break
                             }
@@ -146,11 +165,6 @@ class MyService : Service() {
                         if(flag) {
                             break
                         }
-//                        else{
-////                            TODO: REMOVE THIS ELSE IN RELEASE
-//                            notifyUser("Vaccines Not Available!", "We'll notify you once vaccines are available!")
-//                            break
-//                        }
                     }
                 } else {
                     Log.d("myCHECK", "response not successful --> " + response.raw())
@@ -174,7 +188,7 @@ class MyService : Service() {
                         var flag = false
                         for(session in center.sessions) {
                             if(isPreferred(sharedPreferences, session, center)) {
-                                notifyUser("Vaccines Available!", "Book your slot on CoWIN Portal ASAP!")
+                                notifyUser("Vaccines Available!", "Tap to book your slot on CoWIN Portal ASAP!")
                                 flag = true
                                 break
                             }
@@ -182,11 +196,6 @@ class MyService : Service() {
                         if(flag) {
                             break
                         }
-//                        else{
-////                            TODO: REMOVE THIS ELSE IN RELEASE
-//                            notifyUser("Vaccines Not Available!", "We'll notify you once vaccines are available!")
-//                            break
-//                        }
                     }
                 } else {
                     Log.d("myCHECK", "response not successful --> " + response.raw())
@@ -204,11 +213,20 @@ class MyService : Service() {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             nm.createNotificationChannel(NotificationChannel("100","alert", NotificationManager.IMPORTANCE_HIGH))
         }
+
+        val intent = Intent(Intent.ACTION_VIEW)
+        intent.data = Uri.parse("https://selfregistration.cowin.gov.in/")
+
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+
         val simpleNotification = NotificationCompat.Builder(this, "100")
             .setContentTitle(title)
             .setContentText(details)
             .setSmallIcon(R.drawable.ic_launcher_transparent)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
+            .setDefaults(Notification.DEFAULT_VIBRATE)
+            .setAutoCancel(true)
             .build()
 
         nm.notify(1, simpleNotification)
@@ -323,11 +341,16 @@ class MyService : Service() {
                 )
             )
         }
+
+        val intent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+
         return NotificationCompat.Builder(this, "101")
             .setOngoing(true)
             .setContentTitle("Vaccine Alert Set")
             .setContentText("We will notify you as soon as vaccines are available!")
             .setSmallIcon(R.drawable.ic_launcher_transparent)
+            .setContentIntent(pendingIntent)
             .build()
     }
 
