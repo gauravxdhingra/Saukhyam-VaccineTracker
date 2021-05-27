@@ -128,8 +128,7 @@ class _InputDetailsState extends State<InputDetails> {
           title: Text("Saukhyam",
               style: TextStyle(
                   color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.bold)
-          ),
+                  fontWeight: FontWeight.bold)),
           backgroundColor: apiProvider!.getLoading
               ? Theme.of(context).primaryColor.withOpacity(0.4)
               : Theme.of(context).scaffoldBackgroundColor,
@@ -138,6 +137,8 @@ class _InputDetailsState extends State<InputDetails> {
           actions: [
             PopupMenuButton<String>(
               onSelected: handleAppbarActionPopupClick,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.0)),
               icon:
                   Icon(Icons.more_vert, color: Theme.of(context).primaryColor),
               itemBuilder: (BuildContext context) {
@@ -234,16 +235,16 @@ class _InputDetailsState extends State<InputDetails> {
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                  SizedBox(height: 30),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                      //   ],
+                      // ),
+                      SizedBox(height: 30),
+                      // Column(
+                      //   mainAxisSize: MainAxisSize.min,
+                      //   crossAxisAlignment: CrossAxisAlignment.start,
+                      //   children: [
                       SizedBox(height: 20),
                       Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 30),
                           child: Text("Age Group",
                               style: formElementsHeaderTextStyle)),
                       SizedBox(height: 5),
@@ -253,16 +254,13 @@ class _InputDetailsState extends State<InputDetails> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
+                            SizedBox(width: 20),
                             SizedBox(height: 25),
                             for (int i = 0; i < listAges.length; i++)
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 0),
-                                child:
-                                    textTagOptions(listAges[i], i == iAge, () {
-                                  setState(() => iAge = i);
-                                }),
-                              )
+                              textTagOptions(listAges[i], i == iAge, () {
+                                setState(() => iAge = i);
+                              }),
+                            SizedBox(width: 20),
                           ],
                         ),
                       ),
@@ -582,14 +580,12 @@ class _InputDetailsState extends State<InputDetails> {
               ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                       'Saukhyam originates from a Sanskrit phrase, "Ayur Arogya Saukhya" which says, "Live Long with Good Health and Happiness"'),
                   SizedBox(height: 5),
-                  ListTile(
-                    leading: Icon(FontAwesomeIcons.github),
-                    title: Text("View on GitHub", textAlign: TextAlign.left),
-                    trailing: SizedBox(width: 1),
+                  InkWell(
                     onTap: () async {
                       await canLaunch(
                               "https://github.com/gauravxdhingra/Saukhyam-VaccineTracker/releases/tag/v1.0")
@@ -597,8 +593,16 @@ class _InputDetailsState extends State<InputDetails> {
                               "https://github.com/gauravxdhingra/Saukhyam-VaccineTracker/releases/tag/v1.0")
                           : print("Can't Launch!");
                     },
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.0)),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      child: Row(
+                        children: [
+                          Icon(FontAwesomeIcons.github),
+                          SizedBox(width: 15),
+                          Text("View on GitHub", textAlign: TextAlign.left),
+                        ],
+                      ),
+                    ),
                   ),
                   SizedBox(height: 10),
                   Column(

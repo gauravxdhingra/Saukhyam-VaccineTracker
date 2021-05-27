@@ -55,11 +55,37 @@ class _BatteryOptimizationPermissionPageState
     super.dispose();
   }
 
+  GlobalKey _toolTipKey = GlobalKey();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xffFFFFFF),
-      appBar: AppBar(backgroundColor: Colors.white, elevation: 0),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Tooltip(
+              message:
+                  "\nHow to turn off Battery Optimization:\n\nMethod 1: Clicking the button below would open a settings page. From the dropdown menu on top, chose 'All Apps', and search for 'Saukhyam' in the list. Once found, click on it and set the optimization setting to 'Not Optimized'\n\nMethod 2: Go to the 'About App' page of Saukhyam App by long pressing the app icon and disable any Battery Optimizations/Battery Saver and return to the app\n\nIf none of these work, you may skip this step\n",
+              showDuration: Duration(seconds: 30),
+              // padding: EdgeInsets.symmetric(horizontal: 10),
+              margin: EdgeInsets.symmetric(horizontal: 10),
+              waitDuration: Duration(milliseconds: 1),
+              key: _toolTipKey,
+              child: GestureDetector(
+                child: Icon(Icons.info, color: Theme.of(context).primaryColor),
+                onTap: () async {
+                  final dynamic tooltip = _toolTipKey.currentState;
+                  tooltip.ensureTooltipVisible();
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
       body: Stack(
         children: [
           Center(
@@ -98,37 +124,6 @@ class _BatteryOptimizationPermissionPageState
                         await OpenSettings
                             .openIgnoreBatteryOptimizationSetting();
                       }
-                      // if (_flag) {
-                      //   await OpenSettings
-                      //       .openIgnoreBatteryOptimizationSetting();
-                      //   setState(() {
-                      //     _flag = false;
-                      //     isIgnoring = true;
-                      //   });
-                      // }
-                      //
-                      // if (!_flag) {
-                      //   isIgnoring = await platformChannelProvider!
-                      //       .isIgnoringBatteryOptimizations();
-                      //   if (isIgnoring) {
-                      //     bool isServiceAlreadyRunning =
-                      //         await platformChannelProvider!
-                      //             .getServiceRunning();
-                      //     if (isServiceAlreadyRunning) {
-                      //       await Future.delayed(Duration(milliseconds: 700));
-                      //       Navigator.pushReplacementNamed(
-                      //           context, ServiceAlreadyRunningPage.routeName);
-                      //     } else {
-                      //       Future.delayed(Duration(milliseconds: 700));
-                      //       Navigator.pushReplacementNamed(
-                      //           context, InputDetails.routeName);
-                      //     }
-                      //   } else {
-                      //     setState(() {
-                      //       _flag = true;
-                      //     });
-                      //   }
-                      // }
                     },
                     child: AnimatedContainer(
                         duration: Duration(milliseconds: 300),

@@ -78,6 +78,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.3"
+  custom_pop_up_menu:
+    dependency: "direct main"
+    description:
+      name: custom_pop_up_menu
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.2.0"
   dio:
     dependency: "direct main"
     description:
@@ -142,6 +149,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "9.0.0"
+  get:
+    dependency: "direct main"
+    description:
+      name: get
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "4.1.4"
   http:
     dependency: "direct main"
     description:

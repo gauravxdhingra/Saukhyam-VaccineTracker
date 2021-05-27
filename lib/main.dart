@@ -11,6 +11,8 @@ void main() {
   runApp(MyApp());
 }
 
+final GlobalKey<NavigatorState> navigatorKey = new GlobalKey<NavigatorState>();
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -26,12 +28,12 @@ class MyApp extends StatelessWidget {
           fontFamily: 'Calibri',
           primaryColor: Color(0xFF742C63),
           accentColor: Colors.blueGrey,
-          bottomSheetTheme:
-              BottomSheetThemeData(backgroundColor: Colors.black54),
         ),
+        navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
         routes: {
           '/': (context) => SplashScreen(),
+          // BatteryOptimizationPermissionPage(),
           InputDetails.routeName: (context) => InputDetails(),
           ServiceAlreadyRunningPage.routeName: (context) =>
               ServiceAlreadyRunningPage(),
