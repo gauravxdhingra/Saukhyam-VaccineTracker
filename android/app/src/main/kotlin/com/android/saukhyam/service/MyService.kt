@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import android.os.Vibrator
 import android.util.Log
 import android.webkit.WebSettings
 import androidx.annotation.RequiresApi
@@ -214,6 +215,7 @@ class MyService : Service() {
             nm.createNotificationChannel(NotificationChannel("100","alert", NotificationManager.IMPORTANCE_HIGH))
         }
 
+        val vibrator = this.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         val intent = Intent(Intent.ACTION_VIEW)
         intent.data = Uri.parse("https://selfregistration.cowin.gov.in/")
 
@@ -225,11 +227,11 @@ class MyService : Service() {
             .setSmallIcon(R.drawable.ic_launcher_transparent)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
-            .setDefaults(Notification.DEFAULT_VIBRATE)
             .setAutoCancel(true)
             .build()
 
         nm.notify(1, simpleNotification)
+        vibrator.vibrate(300)
     }
 
     private fun isPreferred(sharedPreferences: SharedPreferences, session: Session, center: Center) : Boolean {
