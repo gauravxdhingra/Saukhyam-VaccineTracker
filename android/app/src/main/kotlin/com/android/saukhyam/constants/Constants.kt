@@ -11,6 +11,6 @@ class Constants {
     val DOSE = "DOSE"
     val COST = "COST"
 
-    val TIME: Long = 5 * 60 * 1000
+    val TIME: Long = 7 * 60 * 1000
 
 }

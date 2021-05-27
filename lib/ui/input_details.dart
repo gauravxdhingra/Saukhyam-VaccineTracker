@@ -583,7 +583,7 @@ class _InputDetailsState extends State<InputDetails> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                      'Saukhyam originates from a Sanskrit phrase, "Ayur Arogya Saukhya" which says, "Live Long with Good Health and Happiness"'),
+                      'Saukhyam (सौख्यम्) originates from a Sanskrit phrase, "Ayur Arogya Saukhya" which says, "Live Long with Good Health and Happiness"'),
                   SizedBox(height: 5),
                   InkWell(
                     onTap: () async {
