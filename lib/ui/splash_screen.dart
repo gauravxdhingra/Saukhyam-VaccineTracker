@@ -23,8 +23,11 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!_init) {
       _init = true;
       platformChannelProvider = Provider.of<PlatformChannelProvider>(context);
-      bool isServiceAlreadyRunning =
+      bool isServiceAlreadyRunningSPF =
           await platformChannelProvider!.getServiceRunning();
+
+      bool isServiceRunningNatively =
+          await platformChannelProvider!.isServiceRunningNatively();
 
       bool isIgnoringBatteryOptimizations =
           await platformChannelProvider!.isIgnoringBatteryOptimizations();
@@ -37,16 +40,16 @@ class _SplashScreenState extends State<SplashScreen> {
         batteryOptimizationsIgnoredUser = true;
 
       if (isIgnoringBatteryOptimizations || !batteryOptimizationsIgnoredUser) {
-        if (isServiceAlreadyRunning) {
-          await Future.delayed(Duration(milliseconds: 700));
+        if (isServiceRunningNatively && isServiceAlreadyRunningSPF) {
+          await Future.delayed(Duration(milliseconds: 500));
           Navigator.pushReplacementNamed(
               context, ServiceAlreadyRunningPage.routeName);
         } else {
-          Future.delayed(Duration(milliseconds: 700));
+          Future.delayed(Duration(milliseconds: 500));
           Navigator.pushReplacementNamed(context, InputDetails.routeName);
         }
       } else {
-        await Future.delayed(Duration(milliseconds: 700));
+        await Future.delayed(Duration(milliseconds: 500));
         Navigator.pushReplacementNamed(
             context, BatteryOptimizationPermissionPage.routeName);
       }

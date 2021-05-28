@@ -89,140 +89,151 @@ class _ServiceAlreadyRunningPageState extends State<ServiceAlreadyRunningPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(0xffFCFDFC),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 100),
-                  child: Image.asset("assets/images/notification_animation.gif",
-                      fit: BoxFit.fitWidth),
-                ),
-                Padding(
-                    padding:
-                        const EdgeInsets.only(left: 25, right: 25, top: 15),
-                    child: Text(
-                        "We'll notify you, as soon as a preferred slot is available!",
-                        style: _textStyle.copyWith(fontSize: 18),
-                        textAlign: TextAlign.center)),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      SizedBox(width: 10),
-                      Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(
-                                color: Theme.of(context).primaryColor),
-                            borderRadius: BorderRadius.circular(10.0)),
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: TextButton(
-                            onPressed: () async {
-                              await platformChannelProvider!.deleteAlerts();
-                              Navigator.pushReplacementNamed(
-                                  context, InputDetails.routeName);
-                            },
-                            child: Text("Stop Alert")),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                            color: Theme.of(context).primaryColor,
-                            borderRadius: BorderRadius.circular(10.0)),
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: TextButton(
-                            onPressed: () async {
-                              await showMoreBottomSheet();
-                            },
-                            child: Text("More Details",
-                                style: TextStyle(color: Colors.white))),
-                      ),
-                      SizedBox(width: 10),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 20),
-                InkWell(
-                  onTap: () {
-                    Share.share(
-                        'Never miss a Vaccine Slot again!\nDownload Saukhyam App https://github.com/gauravxdhingra/Saukhyam-VaccineTracker/releases/tag/v1.0 and get Instant updates on Vaccine Availability.\nAyur Arogya Saukhya 🙏\n#IndiaFightsCorona');
-                  },
-                  child: Container(
-                      height: 100,
-                      width: MediaQuery.of(context).size.width,
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Image.asset('assets/images/covid-family.png',
-                              fit: BoxFit.cover),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 10.0),
-                            child: Text("Share with your\nFriends and Family",
-                                style: TextStyle(
-                                    color: Theme.of(context).primaryColor,
-                                    fontSize: 20),
-                                overflow: TextOverflow.ellipsis),
-                          ),
-                        ],
-                      )),
-                )
-              ],
-            ),
-          ),
-          Align(
-              alignment: Alignment.bottomCenter,
+    print(MediaQuery.of(context).size.aspectRatio);
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Color(0xffFCFDFC),
+        body: Stack(
+          children: [
+            SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 40),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
+                    padding: const EdgeInsets.only(top: 50),
+                    child: Image.asset(
+                        "assets/images/notification_animation.gif",
+                        fit: BoxFit.fitWidth),
+                  ),
+                  Padding(
+                      padding:
+                          const EdgeInsets.only(left: 25, right: 25, top: 15),
+                      child: Text(
+                          "We'll notify you, as soon as a preferred slot is available!",
+                          style: _textStyle.copyWith(fontSize: 18),
+                          textAlign: TextAlign.center)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Text("An Initiative By ", style: _textStyle),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            InkWell(
-                              child: Text("Gaurav Dhingra",
-                                  style: _textStyle.copyWith(
-                                      color: Theme.of(context).primaryColor,
-                                      fontWeight: FontWeight.bold)),
-                              onTap: () async {
-                                await canLaunch(
-                                        "https://www.linkedin.com/in/gauravxdhingra/")
-                                    ? await launch(
-                                        "https://www.linkedin.com/in/gauravxdhingra/")
-                                    : print("Can't Launch!");
+                        SizedBox(width: 10),
+                        Container(
+                          decoration: BoxDecoration(
+                              border: Border.all(
+                                  color: Theme.of(context).primaryColor),
+                              borderRadius: BorderRadius.circular(10.0)),
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: TextButton(
+                              onPressed: () async {
+                                await platformChannelProvider!.deleteAlerts();
+                                Navigator.pushReplacementNamed(
+                                    context, InputDetails.routeName);
                               },
-                            ),
-                            Text(" and ", style: _textStyle),
-                            InkWell(
-                              child: Text("Rahul Jain",
-                                  style: _textStyle.copyWith(
-                                      color: Theme.of(context).primaryColor,
-                                      fontWeight: FontWeight.bold)),
-                              onTap: () async {
-                                await canLaunch("https://bit.ly/mRahulJain")
-                                    ? await launch("https://bit.ly/mRahulJain")
-                                    : print("Can't Launch!");
-                              },
-                            ),
-                          ],
+                              child: Text("Stop Alert")),
                         ),
+                        Container(
+                          decoration: BoxDecoration(
+                              color: Theme.of(context).primaryColor,
+                              borderRadius: BorderRadius.circular(10.0)),
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: TextButton(
+                              onPressed: () async {
+                                await showMoreBottomSheet();
+                              },
+                              child: Text("More Details",
+                                  style: TextStyle(color: Colors.white))),
+                        ),
+                        SizedBox(width: 10),
                       ],
                     ),
                   ),
+                  SizedBox(height: 20),
+                  InkWell(
+                    onTap: () {
+                      Share.share(
+                          'Never miss a Vaccine Slot again!\nDownload Saukhyam App https://github.com/gauravxdhingra/Saukhyam-VaccineTracker/releases/tag/v1.0 and get Instant updates on Vaccine Availability.\nAyur Arogya Saukhya 🙏\n#IndiaFightsCorona');
+                    },
+                    child: Container(
+                        height: 100,
+                        width: MediaQuery.of(context).size.width,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Image.asset('assets/images/covid-family.png',
+                                fit: BoxFit.cover),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10.0),
+                              child: Text("Share with your\nFriends and Family",
+                                  style: TextStyle(
+                                      color: Theme.of(context).primaryColor,
+                                      fontSize: 20),
+                                  overflow: TextOverflow.ellipsis),
+                            ),
+                          ],
+                        )),
+                  ),
+                  if (MediaQuery.of(context).size.aspectRatio > 0.53)
+                    SizedBox(height: 100),
                 ],
-              )),
-        ],
+              ),
+              physics: BouncingScrollPhysics(),
+            ),
+            Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  color: Color(0xffFCFDFC),
+                  width: MediaQuery.of(context).size.width,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 40),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text("An Initiative By ", style: _textStyle),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              InkWell(
+                                child: Text("Gaurav Dhingra",
+                                    style: _textStyle.copyWith(
+                                        color: Theme.of(context).primaryColor,
+                                        fontWeight: FontWeight.bold)),
+                                onTap: () async {
+                                  await canLaunch(
+                                          "https://www.linkedin.com/in/gauravxdhingra/")
+                                      ? await launch(
+                                          "https://www.linkedin.com/in/gauravxdhingra/")
+                                      : print("Can't Launch!");
+                                },
+                              ),
+                              Text(" and ", style: _textStyle),
+                              InkWell(
+                                child: Text("Rahul Jain",
+                                    style: _textStyle.copyWith(
+                                        color: Theme.of(context).primaryColor,
+                                        fontWeight: FontWeight.bold)),
+                                onTap: () async {
+                                  await canLaunch("https://bit.ly/mRahulJain")
+                                      ? await launch(
+                                          "https://bit.ly/mRahulJain")
+                                      : print("Can't Launch!");
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                )),
+          ],
+        ),
       ),
     );
   }

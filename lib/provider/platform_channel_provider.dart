@@ -23,10 +23,21 @@ class PlatformChannelProvider with ChangeNotifier {
   }
 
   Future<bool> isIgnoringBatteryOptimizations() async {
-    bool result = false;
+    bool result = true;
     try {
       result = await platform.invokeMethod('isIgnoringBatteryOptimizations');
       print(result);
+    } on PlatformException catch (e) {
+      print(e.message);
+    }
+    return result;
+  }
+
+  Future<bool> isServiceRunningNatively() async {
+    bool result = false;
+    try {
+      result = await platform.invokeMethod('isServiceRunningNatively');
+      print("isServiceRunningNatively " + result.toString());
     } on PlatformException catch (e) {
       print(e.message);
     }

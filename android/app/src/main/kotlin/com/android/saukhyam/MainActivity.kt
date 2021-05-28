@@ -52,6 +52,19 @@ class MainActivity: FlutterActivity() {
                     if(res) result.success(true) else result.success(false)
                 }
 
+                "isServiceRunningNatively"->{
+                    try{
+                        val service = MyService()
+                        if (isMyServiceRunning(service::class.java)) {
+                            result.success(true)
+                        } else {
+                            result.success(false)
+                        }
+                    } catch(e:Exception){
+                        result.error("failed", "Couldn't check running service", "couldn't resolve service")
+                    }
+                }
+
                 "registerWithPinCode" -> {
                     // Accessing arguments-> call.arguments returns a map/object with the passes arguments as described in above comments
                     Log.v("myCHECK", "pincode-main")

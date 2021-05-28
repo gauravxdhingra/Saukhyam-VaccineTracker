@@ -69,7 +69,7 @@ class _BatteryOptimizationPermissionPageState
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Tooltip(
               message:
-                  "\nHow to turn off Battery Optimization:\n\nMethod 1: Clicking the button below would open a settings page. From the dropdown menu on top, choose 'All Apps', and search for 'Saukhyam' in the list. Once found, click on it and set the optimization setting to 'Not Optimized'\n\nMethod 2: Go to the 'About App' page of Saukhyam App by long pressing the app icon and then allow background activities\n\nIf none of these work, you may skip this step\n",
+                  "\nHow to turn off Battery Optimization:\n\nMethod 1: Clicking the button below would open a settings page. From the dropdown menu on top, switch from 'Not Optimized' to 'All Apps', and search for 'Saukhyam' in the list. Once found, click on it and set the optimization setting to 'Not Optimized'\n\nMethod 2: Go to the 'About App' page of Saukhyam App by long pressing the app icon and then allow background activities\n\nIf none of these work, you may skip this step\n",
               showDuration: Duration(seconds: 30),
               // padding: EdgeInsets.symmetric(horizontal: 10),
               margin: EdgeInsets.symmetric(horizontal: 10),
@@ -134,14 +134,15 @@ class _BatteryOptimizationPermissionPageState
                             borderRadius: BorderRadius.circular(15.0)),
                         padding:
                             EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                        width: MediaQuery.of(context).size.width * 0.7,
+                        width: MediaQuery.of(context).size.width * 0.8,
                         child: Center(
                           child: Text(
                               !isIgnoring
                                   ? "Open Battery Optimization Settings"
                                   : "Proceed",
                               style:
-                                  TextStyle(color: Colors.white, fontSize: 15)),
+                                  TextStyle(color: Colors.white, fontSize: 14),
+                              textAlign: TextAlign.center),
                         )),
                   ),
                   SizedBox(height: 50),

@@ -235,13 +235,7 @@ class _InputDetailsState extends State<InputDetails> {
                           ],
                         ),
                       ),
-                      //   ],
-                      // ),
                       SizedBox(height: 30),
-                      // Column(
-                      //   mainAxisSize: MainAxisSize.min,
-                      //   crossAxisAlignment: CrossAxisAlignment.start,
-                      //   children: [
                       SizedBox(height: 20),
                       Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -274,7 +268,6 @@ class _InputDetailsState extends State<InputDetails> {
                       child: Container(
                         padding:
                             EdgeInsets.symmetric(vertical: 20, horizontal: 30),
-                        // color: Colors.red,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
